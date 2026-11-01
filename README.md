@@ -78,15 +78,16 @@ At the hearing, if your defense is at least as strong as the owner's case, the c
 
 If you lose, you are evicted. You can also leave voluntarily at any time, which drops any case on the current land.
 
-Moving means choosing a new estate and packing the trucks. Each family carries 15 units and each ox cart carries 60. Grain, eggs, hens and chicks weigh 1 each, and hoes weigh 2. Goats walk alongside and money weighs nothing. Crops still in the ground, wells and anything over the limit stay behind. The journey takes a month, and the families eat on the road.
+Moving means choosing a new estate on the map and packing the trucks. Trucks and fuel cost R$10 plus R$0.03 per km, on a road distance about 1.3 times the straight line. You need the full amount to leave voluntarily. After an eviction you pay what you have and the union covers the rest. Each family carries 15 units and each ox cart carries 60. Grain, eggs, hens and chicks weigh 1 each, and hoes weigh 2. Goats walk alongside and money weighs nothing. Crops still in the ground, wells and anything over the limit stay behind. The journey takes a month, and the families eat on the road.
 
 ### The map
 
-A map of Brazil shows where the estates are and what state the land is in. Each estate sits in its region (Pontal do Paranapanema, Sul do Pará, Campanha Gaúcha and so on). It is a stylized outline, with positions that are approximate and illustrative, not survey data.
+A stylized map of Brazil shows 16 idle estates, two in each region (Pontal do Paranapanema, Sul do Pará, Campanha Gaúcha and so on). Positions are approximate and illustrative, not survey data.
 
-- When you choose or move to an estate, the three offers appear as numbered idle-land markers. Click a marker or a card to select it.
-- Your camp's marker is red where the land is idle and fills green as plots go into production, so the effect of your farming is visible. A won settlement is fully green with a gold ring.
-- Estates you left behind, or were evicted from, stay on the map as a ✕.
+- Each idle estate is a red, selectable marker. At the start, pick one to occupy. Later, tap one on the map to see its size, soil, owner, years unused, distance and **what it costs to move there**.
+- Your camp is the larger marker. It is red where the land is idle and fills green as plots go into production, so the effect of your farming is visible.
+- Estates you can't afford to reach right now are faded. Selecting one draws the route from your camp and shows its name and cost on the map.
+- Land you leave on your own goes back to the map as idle scrub. Land you are evicted from stays marked with a ✕ and does not come back.
 
 ### Random events
 

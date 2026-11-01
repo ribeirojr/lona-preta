@@ -93,11 +93,14 @@ details ul{padding-left:18px;margin:6px 0}
 .row .n{min-width:3ch;text-align:right}
 .cap .track i{background:var(--corn)}
 .cap.over .track i{background:var(--clay)}
-.map{width:100%;max-width:360px;height:auto;margin:0 auto;display:block}
+.map{width:100%;max-width:440px;height:auto;margin:0 auto;display:block}
 .map .br{fill:var(--tarp-3);stroke:var(--line);stroke-width:1.5;stroke-linejoin:round}
 .map text{fill:var(--chalk);font-size:11px;paint-order:stroke;stroke:var(--tarp-2);stroke-width:3px;stroke-linejoin:round}
-.map text.n{fill:#fff;font-weight:700;stroke:none}
-.map .cand{cursor:pointer}
+.map .cand{cursor:pointer;outline:none}
+.map .cand:hover circle,.map .cand:focus-visible circle{stroke:var(--corn)}
+.map text.c{font-size:11px;font-weight:700}
+.map .route{stroke:var(--corn);stroke-width:1.5;stroke-dasharray:4 4;fill:none}
+.cost{font-size:13px;color:var(--dim)}.cost b{color:var(--corn)}
 .legend{display:flex;flex-wrap:wrap;gap:4px 14px;justify-content:center;font-size:12px;color:var(--dim)}
 .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
 .tabs{display:flex;gap:6px}
@@ -118,7 +121,7 @@ const CROPS={
   mandioca:{name:"Mandioca",en:"cassava",grow:5,yield:22,price:1.5}
 };
 const SEED_COST=2;
-const NAMES=["Santa Rita","Boa Esperança","São José","Três Irmãos","Barra Funda","Pau-d'Arco","Água Limpa","Lagoa Seca","Bela Vista","Cachoeira Grande","Santa Clara","Bom Retiro","Capão Alto","Serra Velha","Primavera"];
+const NAMES=["Santa Rita","Boa Esperança","São José","Três Irmãos","Barra Funda","Pau-d'Arco","Água Limpa","Lagoa Seca","Bela Vista","Cachoeira Grande","Santa Clara","Bom Retiro","Capão Alto","Serra Velha","Primavera","Nova Aliança","Rio Claro","Santa Fé"];
 const REGIONS=["Pontal do Paranapanema, SP","Sul do Pará","Zona da Mata, PE","Oeste do Paraná","Norte de Minas","Sertão da Bahia","Campanha Gaúcha","Bico do Papagaio, TO"];
 /* Approximate [lon,lat] of each region, and a coarse outline of Brazil. Equirectangular, 400x395 viewBox. */
 const REGION_XY={"Pontal do Paranapanema, SP":[-52,-22.5],"Sul do Pará":[-50.5,-7],"Zona da Mata, PE":[-36,-8],"Oeste do Paraná":[-53.5,-25],
@@ -133,13 +136,17 @@ const BR_PATH="M"+BR.map(([lo,la])=>geo(lo,la).map(v=>v.toFixed(1)).join(" ")).j
 const rnd=(a,b)=>a+Math.random()*(b-a), ri=(a,b)=>Math.floor(rnd(a,b+1)), pick=a=>a[Math.floor(Math.random()*a.length)];
 let S, moveSel=null, take=null, marketTab="sell";
 
-const genChoices=()=>[...REGIONS].sort(()=>Math.random()-.5).slice(0,3).map(genLand);
-function genLand(region){
+/* Two idle estates per region, placed on opposite sides of the region's centre so their markers don't overlap. */
+function genEstates(){
+  const names=[...NAMES].sort(()=>Math.random()-.5);
+  return REGIONS.flatMap((r,i)=>{const a=rnd(0,Math.PI);
+    return [0,1].map(k=>genLand(r,names[i*2+k],Math.cos(a+k*Math.PI)*1.1,Math.sin(a+k*Math.PI)*1.1))});
+}
+function genLand(region,name,dx,dy){
   const size=pick([9,12,12,16]);
-  region=region||pick(REGIONS);
-  return {name:"Fazenda "+pick(NAMES),region,lon:REGION_XY[region][0]+rnd(-.8,.8),lat:REGION_XY[region][1]+rnd(-.8,.8),size,cols:size===9?3:4,
+  return {name:"Fazenda "+name,region,lon:REGION_XY[region][0]+dx,lat:REGION_XY[region][1]+dy,size,cols:size===9?3:4,
     fert:+rnd(.7,1.3).toFixed(2),idle:ri(2,20),owner:ri(15,60),growth:ri(1,4),vigil:+rnd(.5,1.5).toFixed(2),
-    km:ri(20,400),well:false,plots:Array.from({length:size},()=>({s:Math.random()<.8?"mato":"terra"}))};
+    well:false,plots:Array.from({length:size},()=>({s:Math.random()<.8?"mato":"terra"}))};
 }
 const ownerKind=l=>l.owner<30?"Heirs in a dispute":l.owner<45?"Absentee rancher":"Agribusiness group";
 const fertLabel=l=>l.fert<.9?"Poor soil":l.fert<1.1?"Fair soil":"Rich soil";
@@ -153,7 +160,7 @@ function newPrices(){const o={};for(const k in CROPS)o[k]=+(CROPS[k].price*rnd(.
 
 function newGame(){
   S={t:0,families:3,labor:6,money:50,inv:{feijao:20,milho:20,mandioca:12,ovos:0},hens:5,chicks:[],goats:0,tools:0,carts:0,
-    land:null,discovered:false,cas:null,acted:{},sel:null,log:[],history:[],landsCount:0,evictions:0,choices:genChoices(),
+    land:null,discovered:false,cas:null,acted:{},sel:null,log:[],history:[],landsCount:0,evictions:0,estates:genEstates(),
     phase:"choose",prices:newPrices()};
   moveSel=null; take=null;
   log("Three families, five hens and sacks of seed. The camp needs a place to put down roots.");
@@ -242,7 +249,8 @@ function render(){
     </div>
     <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
       ${caseHtml}
-      <div class="panel"><div class="landhead"><span class="label">Map · idle land</span><span class="label">${S.phase==="won"?"Settlement won":active()+"/"+L.size+" plots in production"}</span></div>${mapHtml()}</div>
+      <div class="panel"><div class="landhead"><span class="label">Map · idle land</span><span class="label">${S.phase==="won"?"Settlement won":active()+"/"+L.size+" plots in production"}</span></div>${mapHtml()}
+        ${S.phase==="won"?"":moveSel!=null&&S.estates[moveSel]?`${estateCard(S.estates[moveSel])}<div class="bar"><button class="btn go" data-a="move" ${S.money<moveCost(S.estates[moveSel])?"disabled":""}>Move camp here<small>R$${moveCost(S.estates[moveSel])}</small></button></div>`:`<span class="calm">Tap an idle estate on the map to see what it costs to move there.</span>`}</div>
       <div class="panel"><span class="label">Stores</span>
         <div class="inv">
           ${Object.keys(CROPS).map(k=>`<div><b>${S.inv[k]}</b>${CROPS[k].name} <span>(${CROPS[k].en})</span></div>`).join("")}
@@ -271,31 +279,49 @@ function render(){
   </div>`;
 }
 /* ---------- map ---------- */
-const pos=l=>{const r=REGION_XY[l.region]||[-52,-15];return geo(l.lon??r[0],l.lat??r[1])};
+const ll=l=>{const r=REGION_XY[l.region]||[-52,-15];return [l.lon??r[0],l.lat??r[1]]};
+const pos=l=>geo(...ll(l));
+/* Moving costs trucks and fuel: a base fee plus a rate per km. Road distance is ~1.3x the straight line. */
+function kmTo(l){
+  const [a,b]=[ll(S.land),ll(l)].map(([lo,la])=>[lo*Math.PI/180,la*Math.PI/180]);
+  const h=Math.sin((b[1]-a[1])/2)**2+Math.cos(a[1])*Math.cos(b[1])*Math.sin((b[0]-a[0])/2)**2;
+  return Math.round(2*6371*Math.asin(Math.sqrt(h))*1.3/10)*10;
+}
+const moveCost=l=>S.land?Math.round(10+kmTo(l)*.03):0;
 const CIRC=2*Math.PI*7;
-function mapHtml(cands){
+function mapHtml(){
   let m="";
-  for(const h of S.history){const [x,y]=pos(h);
-    m+=`<path d="M${x-3} ${y-3}L${x+3} ${y+3}M${x+3} ${y-3}L${x-3} ${y+3}" stroke="${h.evicted?"var(--clay)":"var(--dim)"}" stroke-width="2" stroke-linecap="round"><title>${h.name}: ${h.evicted?"evicted":"left"}</title></path>`}
+  for(const h of S.history){if(!h.evicted)continue;const [x,y]=pos(h);
+    m+=`<path d="M${x-3} ${y-3}L${x+3} ${y+3}M${x+3} ${y-3}L${x-3} ${y+3}" stroke="var(--clay)" stroke-width="2" stroke-linecap="round"><title>${h.name}: evicted</title></path>`}
+  const sel=moveSel!=null?S.estates[moveSel]:null;
+  if(S.land&&sel){const [x1,y1]=pos(S.land),[x2,y2]=pos(sel);m+=`<line class="route" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`}
+  [...S.estates.keys()].sort((a,b)=>(a===moveSel)-(b===moveSel)).forEach(i=>{
+    const l=S.estates[i],[x,y]=pos(l),r=5+l.size/5,on=moveSel===i,c=moveCost(l);
+    m+=`<g data-land="${i}" class="cand${on?" on":""}" tabindex="0" role="button" aria-label="${l.name}, idle ${l.idle} years, ${l.size} plots${S.land?`, ${kmTo(l)} km, R$${c} to move`:""}">
+      <title>${l.name}: idle ${l.idle} yrs, ${l.size} plots${S.land?`, ${kmTo(l)} km, R$${c} to move`:""}</title>
+      <circle cx="${x}" cy="${y}" r="${r}" fill="var(--clay)" fill-opacity="${S.land&&S.money<c&&S.phase!=="evict"?.3:.85}" stroke="${on?"var(--corn)":"var(--chalk)"}" stroke-width="${on?3:1}"/>
+      ${on?`<text class="c" x="${x}" y="${y+r+11}" text-anchor="middle">${l.name.replace("Fazenda ","")}${S.land?` · R$${c}`:""}</text>`:""}</g>`});
   if(S.land){
     const L=S.land,[x,y]=pos(L),won=S.phase==="won",frac=won?1:active()/L.size;
     m+=`<g><title>${L.name}: ${active()} of ${L.size} plots in production</title>
       <circle cx="${x}" cy="${y}" r="14" fill="var(--clay)"/>
       <circle cx="${x}" cy="${y}" r="7" fill="none" stroke="var(--leaf)" stroke-width="14" stroke-dasharray="${(frac*CIRC).toFixed(2)} ${CIRC.toFixed(2)}" transform="rotate(-90 ${x} ${y})"/>
       <circle cx="${x}" cy="${y}" r="14" fill="none" stroke="${won?"var(--corn)":"var(--chalk)"}" stroke-width="${won?3:1.5}"/>
-      <text x="${x}" y="${y+27}" text-anchor="middle">${won?"Settlement":L.name.replace("Fazenda ","")}</text></g>`;
+      <text x="${x}" y="${y-19}" text-anchor="middle">${won?"Settlement":"Your camp"}</text></g>`;
   }
-  (cands||[]).forEach((l,i)=>{const [x,y]=pos(l),r=6+l.size/4,on=moveSel===i;
-    m+=`<g data-land="${i}" class="cand"><title>${l.name}: idle ${l.idle} years</title>
-      <circle cx="${x}" cy="${y}" r="${r}" fill="var(--clay)" fill-opacity=".85" stroke="${on?"var(--corn)":"var(--chalk)"}" stroke-width="${on?3:1}"/>
-      <text class="n" x="${x}" y="${y+4}" text-anchor="middle">${i+1}</text></g>`});
-  return `<svg class="map" viewBox="0 0 400 395" role="img" aria-label="Map of Brazil showing idle and productive land"><path d="${BR_PATH}" class="br"/>${m}</svg>
-    <div class="legend"><span><i style="background:var(--clay)"></i>Idle land</span><span><i style="background:var(--leaf)"></i>In production</span><span><b style="color:var(--clay)">✕</b> Left behind</span></div>`;
+  return `<svg class="map" viewBox="0 0 400 395" role="img" aria-label="Map of Brazil showing idle estates you can move to and your camp"><path d="${BR_PATH}" class="br"/>${m}</svg>
+    <div class="legend"><span><i style="background:var(--clay)"></i>Idle estate</span>${S.land&&S.phase!=="evict"?`<span><i style="background:var(--clay);opacity:.3"></i>Too costly to reach now</span>`:""}<span><i style="background:var(--leaf)"></i>In production</span><span><b style="color:var(--clay)">✕</b> Evicted</span></div>`;
 }
+/* Details and move cost for an estate chosen on the map. */
+const estateCard=l=>`<div class="landc on"><strong>${l.name}</strong>
+  <span class="calm">${l.region}${S.land?` · ${kmTo(l)} km away`:""}</span>
+  <span class="facts"><span><b>${l.idle} yrs</b> unused</span><span><b>${fertLabel(l)}</b></span><span><b>${l.size}</b> plots</span><span>${ownerKind(l)}</span><span>${vigilLabel(l)}</span></span>
+  ${S.land?`<span class="cost">Trucks and fuel to move here: <b>R$${moveCost(l)}</b></span>`:""}</div>`;
 const defenseTick=()=>Math.round(active()*.6+S.families*.5);
 
 /* ---------- actions ---------- */
 document.addEventListener("click",e=>{
+  const lb=e.target.closest("[data-land]"); if(lb&&!lb.closest("#ov")){moveSel=moveSel===+lb.dataset.land?null:+lb.dataset.land;render();return}
   const pb=e.target.closest("[data-p]"); if(pb){S.sel=+pb.dataset.p;render();return}
   const b=e.target.closest("[data-a]"); if(!b||b.disabled)return;
   const a=b.dataset.a, L=S.land, p=S.sel!=null&&L?L.plots[S.sel]:null;
@@ -307,12 +333,15 @@ document.addEventListener("click",e=>{
     case "laudo": S.money-=60;S.cas.defense+=L.idle*2;S.cas.laudo=1;log(`INCRA inspection confirms ${L.idle} years without production.`);break;
     case "mob": S.labor-=3;S.cas.defense+=5;S.acted.mob=1;log("Families march to the courthouse. The press takes notice.");break;
     case "market": marketTab="sell";openMarket();return;
-    case "move": moveSel=null;take=null;S.choices=genChoices();openMove(false);return;
+    case "move": take=null;openMove(false);return;
     case "next": endMonth();break;
   }
   save();render();
 });
 
+document.addEventListener("keydown",e=>{
+  if((e.key==="Enter"||e.key===" ")&&e.target.matches?.("[data-land]")){e.preventDefault();e.target.dispatchEvent(new MouseEvent("click",{bubbles:true}))}
+});
 function eat(milk){
   let need=S.families*2;
   const use=n=>{const u=Math.min(n,need);need-=u;return u};
@@ -369,7 +398,7 @@ function legal(){
   C.defense+=defenseTick(); C.owner+=L.growth; C.months--;
   if(C.months<=0){
     if(C.defense>=C.owner){S.phase="won";log(`The judge rules for expropriation. ${L.name} becomes a settlement.`);openEnd()}
-    else{S.phase="evict";S.evictions++;log(`The judge orders eviction. The camp must leave ${L.name}.`);moveSel=null;take=null;S.choices=genChoices();openMove(true)}
+    else{S.phase="evict";S.evictions++;log(`The judge orders eviction. The camp must leave ${L.name}.`);moveSel=null;take=null;openMove(true)}
   }
 }
 
@@ -418,18 +447,16 @@ function openMarket(){
   <div>${marketTab==="sell"?sell:buyH}</div>
   <div class="bar"><button class="btn go" data-close="1">Back to the camp</button></div>`);
 }
-function landCard(l,i){return `<button class="landc ${moveSel===i?"on":""}" data-land="${i}"><strong>${i+1} · ${l.name}</strong>
-  <span class="calm">${l.region} · ${l.km} km away</span>
-  <span class="facts"><span><b>${l.idle} yrs</b> unused</span><span><b>${fertLabel(l)}</b></span><span><b>${l.size}</b> plots</span><span>${ownerKind(l)}</span><span>${vigilLabel(l)}</span></span></button>`}
+const pickHint=`<span class="calm">Tap an idle estate on the map.</span>`;
 function openChoose(){
   show(`<h2>Where do we pitch the tarps?</h2>
   <p>Three families, five hens and plenty of seed. Pick an idle estate to occupy. Long-unused land is easier to defend in court. Big agribusiness owners hire stronger lawyers.</p>
-  ${mapHtml(S.choices)}
-  <div class="lands">${S.choices.map(landCard).join("")}</div>
+  ${mapHtml()}
+  ${moveSel!=null?estateCard(S.estates[moveSel]):pickHint}
   <div class="bar"><button class="btn go" data-settle="1" ${moveSel==null?"disabled":""}>Occupy this land</button></div>`);
 }
 function settle(){
-  S.land=S.choices[moveSel];S.landsCount=1;S.phase="play";S.labor=laborMax();
+  S.land=S.estates.splice(moveSel,1)[0];moveSel=null;S.landsCount=1;S.phase="play";S.labor=laborMax();
   log(`Tarps go up at ${S.land.name}, ${S.land.region}.`);hide();save();
 }
 const cap=()=>S.families*15+S.carts*60;
@@ -441,27 +468,32 @@ function defaultTake(){const t={};let room=cap();for(const [k] of TAKEK){const n
 function openMove(forced){
   if(!take)take=defaultTake();
   const w=weight(take),c=cap(),over=w>c;
+  const dest=moveSel!=null?S.estates[moveSel]:null, cost=dest?moveCost(dest):0, broke=!forced&&dest&&S.money<cost;
   const left=S.land.plots.filter(p=>p.s==="grow"||p.s==="ready").length;
   show(`<h2>${forced?"Eviction order":"Move the camp"}</h2>
-  <p>${forced?`The court ruled for the owner. The camp has to leave ${S.land.name}.`:`Leaving drops any court case here.`} Crops in the ground${S.land.well?", the well":""} and anything you can't carry stay behind.${left?` ${left} planted plot${left>1?"s":""} will be lost.`:""} Goats walk with you; money weighs nothing.</p>
+  <p>${forced?`The court ruled for the owner. The camp has to leave ${S.land.name}.`:`Leaving drops any court case here.`} Crops in the ground${S.land.well?", the well":""} and anything you can't carry stay behind.${left?` ${left} planted plot${left>1?"s":""} will be lost.`:""} Goats walk with you; money weighs nothing, but the trucks and fuel cost money${forced?" (the union covers what you can't pay)":""}.</p>
   <span class="label">Choose the next estate</span>
-  ${mapHtml(S.choices)}
-  <div class="lands">${S.choices.map(landCard).join("")}</div>
+  ${mapHtml()}
+  ${moveSel!=null?estateCard(S.estates[moveSel]):pickHint}
   <span class="label">Pack the trucks</span>
   <div class="meter cap ${over?"over":""}" style="grid-template-columns:90px 1fr 70px"><span>Load</span><div class="track"><i style="width:${Math.min(100,w/c*100)}%"></i></div><b>${w}/${c}</b></div>
   <div>${TAKEK.filter(([k])=>have(k)>0).map(([k,nm])=>{const step=W[k]===1&&have(k)>10?5:1;return `<div class="row"><span>${nm} <span class="calm">· have ${have(k)}</span></span><span class="ctl">
     <button class="btn" data-tk="${k}" data-dl="-${step}">−${step}</button><span class="n">${take[k]}</span><button class="btn" data-tk="${k}" data-dl="${step}">+${step}</button></span></div>`}).join("")}</div>
   <span class="calm">Capacity: 15 per family${S.carts?` plus 60 per ox cart`:""}. The journey takes a month, and the families eat on the road.</span>
-  <div class="bar">${forced?"":`<button class="btn" data-close="1">Stay here</button>`}<button class="btn go" data-go="1" ${moveSel==null||over?"disabled":""}>${over?"Too heavy":"Pack up and go"}</button></div>`);
+  <div class="bar">${forced?"":`<button class="btn" data-close="1">Stay here</button>`}<button class="btn go" data-go="1" ${moveSel==null||over||broke?"disabled":""}>${over?"Too heavy":broke?`Need R$${cost}`:`Pack up and go${dest?` · R$${forced?Math.min(S.money,cost):cost}`:""}`}</button></div>`);
 }
 function doMove(){
-  const dest=S.choices[moveSel];
+  const dest=S.estates[moveSel], forced=S.phase==="evict", cost=moveCost(dest), paid=forced?Math.min(S.money,cost):cost, km=kmTo(dest);
+  if(!forced&&S.money<cost)return;
+  S.money-=paid;
+  S.estates.splice(moveSel,1);
+  if(!forced)S.estates.push({...S.land,plots:S.land.plots.map(()=>({s:"mato"}))}); /* left voluntarily: the abandoned land reverts to scrub, still idle */
   S.inv={feijao:take.feijao,milho:take.milho,mandioca:take.mandioca,ovos:take.ovos};
   S.hens=take.hens;S.chicks=S.chicks.slice(0,take.chicks);S.tools=take.tools;
   const from=S.land.name;
-  S.history.push({name:from,region:S.land.region,lon:S.land.lon,lat:S.land.lat,evicted:S.phase==="evict"});
+  S.history.push({name:from,region:S.land.region,lon:S.land.lon,lat:S.land.lat,evicted:forced});
   S.land=dest;S.discovered=false;S.cas=null;S.sel=null;S.landsCount++;S.phase="play";
-  log(`The camp leaves ${from} and travels ${dest.km} km to ${dest.name}, ${dest.region}.`);
+  log(`The camp leaves ${from} and travels ${km} km to ${dest.name}, ${dest.region}. Trucks and fuel: R$${paid}.`);
   endMonth(true);
   moveSel=null;take=null;
   if(S.phase==="play"){hide();save()}
@@ -480,9 +512,10 @@ function start(data){
   if(!S){try{S=JSON.parse(localStorage.getItem("lonapreta"))}catch(e){S=null}}
   if(!S||!S.inv){newGame()}
   S.history=S.history||[];
+  S.estates=S.estates||genEstates();
   render();
   if(S.phase==="choose")openChoose();
-  else if(S.phase==="evict"){S.choices=S.choices||genChoices();openMove(true)}
+  else if(S.phase==="evict")openMove(true)
   else if(S.phase==="won"||S.phase==="lost")openEnd();
 }
 window.claude?.hot?.snapshot?.(()=>({S}));
