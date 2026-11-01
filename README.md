@@ -8,6 +8,19 @@ You lead a camp of landless families. You start with three families, five hens a
 
 It is a single HTML file with no build step and no dependencies.
 
+## Two modes, two languages
+
+The button at the top right switches between two modes. Each one has its own language:
+
+| Mode | Look | Language |
+|---|---|---|
+| **Night** (default) | dark, like a black tarp | English |
+| **Modo Bandeira** | light, with the green, yellow and blue of the Brazilian flag | Português do Brasil |
+
+Your choice is remembered. On a first visit, a device set to a light theme opens in Modo Bandeira.
+You can also force one with `?theme=night` or `?theme=bandeira` in the URL. Switching mid-game re-translates the screen,
+the open window and the camp log.
+
 ## Play
 
 Open `index.html` in any modern browser, on desktop or phone. Progress is saved automatically in your browser's local storage.
@@ -104,15 +117,24 @@ The game is a simplification. Real cases take years, involve many more actors, a
 ## Project layout
 
 ```
-index.html   the whole game: markup, styles and script
-README.md    this file
+index.html          the whole game: markup, styles and script
+README.md           this file
+CLAUDE.md           rules for AI coding assistants (start here if you are one)
+docs/               architecture, translations, themes, recipes, testing
+scripts/check.mjs   static checks: syntax, translations, theme variables
+scripts/shot.mjs    headless-Chrome screenshots, with optional scripted clicks
 ```
 
 No frameworks, no bundler. The only external resources are two Google Fonts (Alfa Slab One and Archivo), with system fallbacks if they fail to load.
 
+## Contributing
+
+Read [CLAUDE.md](CLAUDE.md) and the guides in [docs/](docs/). In short: all text goes through the translation
+dictionary in both languages, all colours are CSS variables that both themes define, and `node scripts/check.mjs`
+must pass before you commit.
+
 ## Ideas for later
 
-- A Portuguese translation, with a language toggle
 - Larger animals (cattle) and processed goods like *farinha de mandioca*
 - Appeals after a lost hearing
 - Settling a won estate and sending some families onward to a new camp
