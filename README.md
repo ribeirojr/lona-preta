@@ -80,6 +80,14 @@ If you lose, you are evicted. You can also leave voluntarily at any time, which 
 
 Moving means choosing a new estate and packing the trucks. Each family carries 15 units and each ox cart carries 60. Grain, eggs, hens and chicks weigh 1 each, and hoes weigh 2. Goats walk alongside and money weighs nothing. Crops still in the ground, wells and anything over the limit stay behind. The journey takes a month, and the families eat on the road.
 
+### The map
+
+A map of Brazil shows where the estates are and what state the land is in. Each estate sits in its region (Pontal do Paranapanema, Sul do Pará, Campanha Gaúcha and so on). It is a stylized outline, with positions that are approximate and illustrative, not survey data.
+
+- When you choose or move to an estate, the three offers appear as numbered idle-land markers. Click a marker or a card to select it.
+- Your camp's marker is red where the land is idle and fills green as plots go into production, so the effect of your farming is visible. A won settlement is fully green with a gold ring.
+- Estates you left behind, or were evicted from, stay on the map as a ✕.
+
 ### Random events
 
 About one month in three brings an event: a fox in the henhouse, good rain or a dry spell, a donation from the rural workers' union, an agrarian reform fair that raises prices, press coverage that helps your case, a seed exchange with a nearby settlement, a new family joining, or a university extension team improving your soil.
