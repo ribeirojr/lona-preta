@@ -2,10 +2,445 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>lona-preta</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lona Preta</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Archivo:wght@400;500;700&display=swap">
+<style>
+body{margin:0}
+[hidden]{display:none!important}
+/* Layout: a camp ledger under black tarp — status strip, the land as a soil grid, and a side column of stores, court case and log. Single dark look by choice. */
+:root{
+  --tarp:#131415; --tarp-2:#1c1e1f; --tarp-3:#26292a; --line:#363a3b;
+  --chalk:#efe7d3; --dim:#a69d89;
+  --clay:#c24a2f; --corn:#e9b62c; --leaf:#77a94b; --leaf-dim:#4f7434;
+  --soil:#4a2c1d; --soil-2:#5f3a26; --soil-line:#7a4d33;
+  --display:"Alfa Slab One", "Rockwell", "Roboto Slab", Georgia, serif;
+  --body:"Archivo", "Helvetica Neue", Arial, sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--tarp);color:var(--chalk);font-family:var(--body);font-size:15px;line-height:1.45;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:14px 28px;
+  background-image:repeating-linear-gradient(115deg, transparent 0 22px, rgba(255,255,255,.012) 22px 23px);}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:2px solid var(--corn);outline-offset:2px}
+.wrap{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(28px,6vw,44px);line-height:1;margin:0;letter-spacing:.01em}
+h1 span{color:var(--clay)}
+.tag{color:var(--dim);font-size:13px;max-width:52ch}
+.status{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--tarp-2);border:1px solid var(--line);border-radius:4px;padding:5px 9px;font-size:13px;display:flex;gap:6px;align-items:baseline;font-variant-numeric:tabular-nums}
+.chip b{font-size:15px}
+.chip.rain{border-color:#3d6a7a}.chip.dry{border-color:#8a6a2a}
+.cols{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:760px){.cols{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--tarp-2);border:1px solid var(--line);border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.label{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--dim)}
+.landhead{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline}
+.landhead h2{font-family:var(--display);font-weight:400;font-size:22px;margin:0}
+.facts{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--dim)}
+.facts b{color:var(--chalk);font-weight:500}
+.grid{display:grid;gap:6px}
+.plot{aspect-ratio:1;max-width:100%;border-radius:4px;border:2px solid transparent;padding:0;position:relative;
+  background:linear-gradient(160deg,var(--soil-2),var(--soil));overflow:hidden}
+.plot svg{width:100%;height:100%;display:block}
+.plot.sel{border-color:var(--corn)}
+.plot .badge{position:absolute;left:4px;bottom:3px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;background:rgba(0,0,0,.55);padding:1px 5px;border-radius:3px}
+.plot.ready .badge{background:var(--corn);color:#2a1d05;font-weight:700}
+.actions{display:flex;flex-wrap:wrap;gap:6px;min-height:40px;align-items:center}
+.btn{background:var(--tarp-3);border:1px solid var(--line);border-radius:4px;padding:8px 12px;font-size:14px;font-weight:500}
+.btn:hover:not(:disabled){border-color:var(--dim)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.go{background:var(--clay);border-color:var(--clay);color:#fff;font-weight:700}
+.btn.corn{background:var(--corn);border-color:var(--corn);color:#241803;font-weight:700}
+.btn small{color:var(--dim);font-weight:400;margin-left:4px}
+.btn.go small,.btn.corn small{color:inherit;opacity:.8}
+.bar{display:flex;flex-wrap:wrap;gap:8px}
+.bar .btn{flex:1 1 auto}
+.inv{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px}
+.inv div{background:var(--tarp-3);border-radius:4px;padding:6px 8px;font-size:12px;color:var(--dim)}
+.inv b{display:block;font-size:18px;color:var(--chalk);font-variant-numeric:tabular-nums}
+.case h3{margin:0;font-family:var(--display);font-weight:400;font-size:18px;color:var(--clay)}
+.meter{display:grid;grid-template-columns:72px 1fr 38px;gap:8px;align-items:center;font-size:13px;font-variant-numeric:tabular-nums}
+.track{height:10px;background:var(--tarp-3);border-radius:2px;overflow:hidden}
+.track i{display:block;height:100%}
+.calm{font-size:13px;color:var(--dim)}
+.log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px;font-size:13px;max-height:220px;overflow:auto}
+.log li{border-left:2px solid var(--line);padding-left:8px;color:var(--dim)}
+.log li:first-child{color:var(--chalk);border-color:var(--corn)}
+.log li .m{font-variant-numeric:tabular-nums;color:var(--dim);margin-right:6px}
+details summary{cursor:pointer;font-weight:500}
+details p,details li{color:var(--dim);font-size:13px;max-width:68ch}
+details ul{padding-left:18px;margin:6px 0}
+/* overlay */
+.ov{position:fixed;inset:0;background:rgba(5,5,5,.78);display:flex;align-items:flex-start;justify-content:center;overflow:auto;z-index:20;
+  padding:calc(20px + env(safe-area-inset-top,0px)) max(12px, env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(12px, env(safe-area-inset-left,0px))}
+.modal{background:var(--tarp-2);border:1px solid var(--line);border-radius:8px;max-width:640px;width:100%;padding:18px;display:flex;flex-direction:column;gap:12px}
+.modal h2{font-family:var(--display);font-weight:400;font-size:24px;margin:0;text-wrap:balance}
+.modal p{margin:0;color:var(--dim);max-width:62ch}
+.lands{display:grid;gap:8px}
+.landc{text-align:left;background:var(--tarp-3);border:2px solid var(--line);border-radius:6px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.landc.on{border-color:var(--corn)}
+.landc strong{font-family:var(--display);font-weight:400;font-size:17px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);font-size:14px;font-variant-numeric:tabular-nums}
+.row:last-child{border-bottom:0}
+.row .ctl{display:flex;gap:4px;align-items:center}
+.row .ctl .btn{padding:4px 9px}
+.row .n{min-width:3ch;text-align:right}
+.cap .track i{background:var(--corn)}
+.cap.over .track i{background:var(--clay)}
+.tabs{display:flex;gap:6px}
+.tabs .btn.on{border-color:var(--corn)}
+@media (prefers-reduced-motion:no-preference){.plot{transition:border-color .15s}.track i{transition:width .3s}}
+</style>
 </head>
 <body>
-<h1>lona-preta</h1>
+<div class="wrap" id="app"></div>
+<div class="ov" id="ov" hidden><div class="modal" id="modal"></div></div>
+
+<script>
+const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const RAINY=new Set([9,10,11,0,1,2]);
+const CROPS={
+  feijao:{name:"Feijão",en:"beans",grow:2,yield:8,price:4},
+  milho:{name:"Milho",en:"corn",grow:3,yield:12,price:2},
+  mandioca:{name:"Mandioca",en:"cassava",grow:5,yield:22,price:1.5}
+};
+const SEED_COST=2;
+const NAMES=["Santa Rita","Boa Esperança","São José","Três Irmãos","Barra Funda","Pau-d'Arco","Água Limpa","Lagoa Seca","Bela Vista","Cachoeira Grande","Santa Clara","Bom Retiro","Capão Alto","Serra Velha","Primavera"];
+const REGIONS=["Pontal do Paranapanema, SP","Sul do Pará","Zona da Mata, PE","Oeste do Paraná","Norte de Minas","Sertão da Bahia","Campanha Gaúcha","Bico do Papagaio, TO"];
+const rnd=(a,b)=>a+Math.random()*(b-a), ri=(a,b)=>Math.floor(rnd(a,b+1)), pick=a=>a[Math.floor(Math.random()*a.length)];
+let S, moveSel=null, take=null, marketTab="sell";
+
+function genLand(){
+  const size=pick([9,12,12,16]);
+  return {name:"Fazenda "+pick(NAMES),region:pick(REGIONS),size,cols:size===9?3:4,
+    fert:+rnd(.7,1.3).toFixed(2),idle:ri(2,20),owner:ri(15,60),growth:ri(1,4),vigil:+rnd(.5,1.5).toFixed(2),
+    km:ri(20,400),well:false,plots:Array.from({length:size},()=>({s:Math.random()<.8?"mato":"terra"}))};
+}
+const ownerKind=l=>l.owner<30?"Heirs in a dispute":l.owner<45?"Absentee rancher":"Agribusiness group";
+const fertLabel=l=>l.fert<.9?"Poor soil":l.fert<1.1?"Fair soil":"Rich soil";
+const vigilLabel=l=>l.vigil<.8?"Rarely visited":l.vigil<1.15?"Occasional visits":"Watched by a caretaker";
+const month=()=>MONTHS[(9+S.t)%12];
+const year=()=>2026+Math.floor((9+S.t)/12);
+const rainy=()=>RAINY.has((9+S.t)%12);
+const laborMax=()=>S.families*2+S.tools;
+const active=()=>S.land?S.land.plots.filter(p=>p.s==="grow"||p.s==="ready").length:0;
+function newPrices(){const o={};for(const k in CROPS)o[k]=+(CROPS[k].price*rnd(.8,1.2)).toFixed(2);o.ovos=+rnd(.8,1.2).toFixed(2);return o}
+
+function newGame(){
+  S={t:0,families:3,labor:6,money:50,inv:{feijao:20,milho:20,mandioca:12,ovos:0},hens:5,chicks:[],goats:0,tools:0,carts:0,
+    land:null,discovered:false,cas:null,acted:{},sel:null,log:[],landsCount:0,evictions:0,choices:[genLand(),genLand(),genLand()],
+    phase:"choose",prices:newPrices()};
+  moveSel=null; take=null;
+  log("Three families, five hens and sacks of seed. The camp needs a place to put down roots.");
+}
+function log(m){S.log.unshift({m,when:S.land||S.t?month()+" "+year():"Start"});S.log=S.log.slice(0,40)}
+function save(){try{localStorage.setItem("lonapreta",JSON.stringify(S))}catch(e){}}
+
+/* ---------- plot art ---------- */
+function art(p){
+  const soil=`<g stroke="var(--soil-line)" stroke-width="2" fill="none" opacity=".7"><path d="M4 18 Q30 14 56 18"/><path d="M4 30 Q30 26 56 30"/><path d="M4 42 Q30 38 56 42"/><path d="M4 54 Q30 50 56 54"/></g>`;
+  if(p.s==="mato") return `<svg viewBox="0 0 60 60"><g stroke="var(--leaf-dim)" stroke-width="2.2" fill="none" stroke-linecap="round">
+    <path d="M6 56 L9 40 L12 56 M14 56 L18 30 L21 56 M24 56 L27 42 L31 56 M33 56 L37 28 L40 56 M42 56 L45 38 L49 56 M50 56 L53 34 L56 56"/>
+    <path d="M10 26 L13 14 L16 26 M30 22 L33 8 L36 22 M44 24 L48 12 L50 24" opacity=".7"/></g></svg>`;
+  if(p.s==="terra") return `<svg viewBox="0 0 60 60">${soil}</svg>`;
+  const c=CROPS[p.crop], pr=Math.min(1,(p.age+(p.s==="ready"?1:0))/c.grow), h=6+pr*30, xs=[15,30,45];
+  let g="";
+  for(const x of xs){
+    const b=50, top=b-h;
+    if(p.crop==="milho"){
+      g+=`<path d="M${x} ${b} L${x} ${top}" stroke="var(--leaf)" stroke-width="2.4"/>
+      <path d="M${x} ${b-h*.4} q-8 -4 -10 2 M${x} ${b-h*.7} q8 -4 10 2" stroke="var(--leaf)" stroke-width="2" fill="none"/>`;
+      if(p.s==="ready") g+=`<ellipse cx="${x+3}" cy="${b-h*.55}" rx="2.6" ry="6" fill="var(--corn)"/>`;
+    } else if(p.crop==="feijao"){
+      g+=`<path d="M${x} ${b} L${x} ${top}" stroke="var(--leaf)" stroke-width="2"/>
+      <circle cx="${x-5}" cy="${top+4}" r="${2+pr*3}" fill="var(--leaf)"/><circle cx="${x+5}" cy="${top+8}" r="${2+pr*3}" fill="var(--leaf)"/>`;
+      if(p.s==="ready") g+=`<path d="M${x+2} ${b-8} q4 6 1 10" stroke="#d8c08a" stroke-width="2.4" fill="none"/>`;
+    } else {
+      g+=`<path d="M${x} ${b} L${x} ${top+4}" stroke="#a0603e" stroke-width="2.2"/>`;
+      for(const a of [-50,-25,0,25,50]){const r=(4+pr*8),rad=(a-90)*Math.PI/180;
+        g+=`<path d="M${x} ${top+4} L${(x+Math.cos(rad)*r).toFixed(1)} ${(top+4+Math.sin(rad)*r).toFixed(1)}" stroke="var(--leaf)" stroke-width="2.4" stroke-linecap="round"/>`;}
+      if(p.s==="ready") g+=`<path d="M${x-4} ${b+2} q4 6 8 0" stroke="#c9905e" stroke-width="3" fill="none"/>`;
+    }
+  }
+  return `<svg viewBox="0 0 60 60">${soil}<g fill="none">${g}</g></svg>`;
+}
+const plotLabel=p=>p.s==="mato"?"Scrub":p.s==="terra"?"Cleared":p.s==="ready"?"Harvest":CROPS[p.crop].name+" "+p.age+"/"+CROPS[p.crop].grow;
+
+/* ---------- render ---------- */
+function render(){
+  const L=S.land, app=document.getElementById("app");
+  if(!L){app.innerHTML=`<header class="top"><div><h1>Lona <span>Preta</span></h1></div></header>`;return}
+  const p=S.sel!=null?L.plots[S.sel]:null;
+  let acts="";
+  if(!p) acts=`<span class="calm">Tap a plot to work it. Each job takes 1 labor.</span>`;
+  else if(p.s==="mato") acts=`<button class="btn" data-a="clear" ${S.labor<1?"disabled":""}>Clear the scrub<small>1 labor</small></button>`;
+  else if(p.s==="terra") acts=Object.keys(CROPS).map(k=>`<button class="btn" data-a="plant" data-c="${k}" ${S.labor<1||S.inv[k]<SEED_COST?"disabled":""}>Plant ${CROPS[k].name}<small>${CROPS[k].grow} mo · ${SEED_COST} seed</small></button>`).join("");
+  else if(p.s==="ready") acts=`<button class="btn corn" data-a="harvest" ${S.labor<1?"disabled":""}>Harvest ${CROPS[p.crop].name}<small>1 labor</small></button>`;
+  else acts=`<span class="calm">${CROPS[p.crop].name} growing: ready in ${CROPS[p.crop].grow-p.age} month${CROPS[p.crop].grow-p.age>1?"s":""}.${p.f<1?" Planted in the dry season: half yield.":""}</span>`;
+
+  const C=S.cas;
+  const caseHtml=C?`<div class="panel case"><div class="landhead"><h3>Repossession suit</h3><span class="label">Hearing in ${C.months} mo</span></div>
+    <div class="meter"><span>Your defense</span><div class="track"><i style="width:${Math.min(100,C.defense/Math.max(C.defense,C.owner,1)*100)}%;background:var(--leaf)"></i></div><b>${Math.round(C.defense)}</b></div>
+    <div class="meter"><span>Owner's case</span><div class="track"><i style="width:${Math.min(100,C.owner/Math.max(C.defense,C.owner,1)*100)}%;background:var(--clay)"></i></div><b>${Math.round(C.owner)}</b></div>
+    <span class="calm">Each month the land is farmed, the social-function argument grows (+${defenseTick()} next month). The owner's lawyers keep pushing too.</span>
+    <div class="actions">
+      <button class="btn" data-a="lawyer" ${S.acted.lawyer||S.money<30?"disabled":""}>Pay popular lawyers<small>R$30 · +6</small></button>
+      <button class="btn" data-a="laudo" ${C.laudo||S.money<60?"disabled":""}>Request INCRA inspection<small>R$60 · +${L.idle*2}</small></button>
+      <button class="btn" data-a="mob" ${S.acted.mob||S.labor<3?"disabled":""}>Public mobilization<small>3 labor · +5</small></button>
+    </div></div>`
+    :`<div class="panel case"><div class="landhead"><h3 style="color:var(--leaf)">Quiet for now</h3><span class="label">${S.discovered?"":"Undiscovered"}</span></div>
+      <span class="calm">${vigilLabel(L)}. The more plots you farm, the sooner the owner notices. When that happens, the suit begins and you fund the defense.</span></div>`;
+
+  app.innerHTML=`
+  <header class="top">
+    <div><h1>Lona <span>Preta</span></h1><div class="tag">Occupy idle land, make it produce, defend it in court. If the judge orders you off, pack what you can carry.</div></div>
+    <div class="status">
+      <span class="chip ${rainy()?"rain":"dry"}">${month()} ${year()} <b>${rainy()?"Rains":"Dry"}</b></span>
+      <span class="chip">Families <b>${S.families}</b></span>
+      <span class="chip">Labor <b>${S.labor}/${laborMax()}</b></span>
+      <span class="chip">R$ <b>${S.money.toFixed(0)}</b></span>
+    </div>
+  </header>
+  <div class="cols">
+    <div class="panel">
+      <div class="landhead"><h2>${L.name}</h2><span class="label">${L.region}</span></div>
+      <div class="facts"><span><b>${L.idle} yrs</b> unused</span><span><b>${fertLabel(L)}</b></span><span>Owner: <b>${ownerKind(L)}</b></span>${L.well?"<span><b>Well dug</b></span>":""}</div>
+      <div class="grid" style="grid-template-columns:repeat(${L.cols},minmax(0,1fr))">
+        ${L.plots.map((q,i)=>`<button class="plot ${S.sel===i?"sel":""} ${q.s}" data-p="${i}" aria-label="Plot ${i+1}: ${plotLabel(q)}">${art(q)}<span class="badge">${plotLabel(q)}</span></button>`).join("")}
+      </div>
+      <div class="actions">${acts}</div>
+      <div class="bar">
+        <button class="btn" data-a="market">Go to the feira</button>
+        <button class="btn" data-a="move">Move camp</button>
+        <button class="btn go" data-a="next">Next month →</button>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      ${caseHtml}
+      <div class="panel"><span class="label">Stores</span>
+        <div class="inv">
+          ${Object.keys(CROPS).map(k=>`<div><b>${S.inv[k]}</b>${CROPS[k].name} <span>(${CROPS[k].en})</span></div>`).join("")}
+          <div><b>${S.inv.ovos}</b>Eggs</div>
+          <div><b>${S.hens}</b>Hens${S.chicks.length?` + ${S.chicks.length} chicks`:""}</div>
+          ${S.goats?`<div><b>${S.goats}</b>Goats</div>`:""}
+          ${S.tools?`<div><b>${S.tools}</b>Hoes</div>`:""}
+          ${S.carts?`<div><b>${S.carts}</b>Ox carts</div>`:""}
+        </div>
+        <span class="calm">Families eat ${S.families*2} food a month. Hens lay more when fed corn (1 per 3 hens).</span>
+      </div>
+      <div class="panel"><span class="label">Camp log</span>
+        <ul class="log">${S.log.slice(0,14).map(l=>`<li><span class="m">${l.when}</span>${l.m}</li>`).join("")}</ul>
+      </div>
+      <details class="panel"><summary>How to play</summary>
+        <ul>
+          <li>Clear scrub, plant from your seed stock, and harvest when ready. Harvests refill your seed stock and feed the camp.</li>
+          <li>Planting in the rainy season (Oct–Mar) gives full yield. Dry-season planting gives half, unless you dig a well.</li>
+          <li>Hens lay eggs and hatch chicks. Sell surplus at the feira to fund lawyers and buy goats, hoes or an ox cart.</li>
+          <li>The Brazilian Constitution (art. 184–186) lets land that fails its social function be expropriated for agrarian reform. Long-idle land and real production strengthen your defense.</li>
+          <li>Win the hearing and the land becomes your settlement. Lose and you must move, taking only what you can carry. Crops in the ground and wells stay behind.</li>
+          <li>If hunger drives every family away, the camp ends.</li>
+        </ul>
+      </details>
+    </div>
+  </div>`;
+}
+const defenseTick=()=>Math.round(active()*.6+S.families*.5);
+
+/* ---------- actions ---------- */
+document.addEventListener("click",e=>{
+  const pb=e.target.closest("[data-p]"); if(pb){S.sel=+pb.dataset.p;render();return}
+  const b=e.target.closest("[data-a]"); if(!b||b.disabled)return;
+  const a=b.dataset.a, L=S.land, p=S.sel!=null&&L?L.plots[S.sel]:null;
+  switch(a){
+    case "clear": p.s="terra";S.labor--;break;
+    case "plant":{const c=b.dataset.c;S.inv[c]-=SEED_COST;S.labor--;Object.assign(p,{s:"grow",crop:c,age:0,f:(rainy()||L.well)?1:.5});break}
+    case "harvest":{const n=Math.round(CROPS[p.crop].yield*L.fert*p.f);S.inv[p.crop]+=n;log(`Harvested ${n} ${CROPS[p.crop].name}.`);p.s="terra";delete p.crop;S.labor--;break}
+    case "lawyer": S.money-=30;S.cas.defense+=6;S.acted.lawyer=1;log("Paid the popular lawyers. They file a contestation.");break;
+    case "laudo": S.money-=60;S.cas.defense+=L.idle*2;S.cas.laudo=1;log(`INCRA inspection confirms ${L.idle} years without production.`);break;
+    case "mob": S.labor-=3;S.cas.defense+=5;S.acted.mob=1;log("Families march to the courthouse. The press takes notice.");break;
+    case "market": marketTab="sell";openMarket();return;
+    case "move": moveSel=null;take=null;S.choices=[genLand(),genLand(),genLand()];openMove(false);return;
+    case "next": endMonth();break;
+  }
+  save();render();
+});
+
+function eat(milk){
+  let need=S.families*2;
+  const use=n=>{const u=Math.min(n,need);need-=u;return u};
+  use(milk);
+  for(const k of ["ovos","mandioca","milho","feijao"]) S.inv[k]-=use(S.inv[k]);
+  if(need>0){S.families--;log(`Not enough food. A family left the camp.`);}
+}
+function chickens(){
+  if(S.hens>0){
+    const corn=Math.ceil(S.hens/3), fed=S.inv.milho>=corn;
+    if(fed)S.inv.milho-=corn;
+    S.inv.ovos+=S.hens*(fed?3:1);
+  }
+  S.chicks=S.chicks.map(a=>a+1);
+  const grown=S.chicks.filter(a=>a>=2).length; S.chicks=S.chicks.filter(a=>a<2); S.hens+=grown;
+  if(S.hens>=2){const n=ri(0,Math.ceil(S.hens/4));for(let i=0;i<n;i++){S.chicks.push(0);S.inv.ovos=Math.max(0,S.inv.ovos-1)}}
+}
+const EVENTS=[
+  ()=>{if(!S.hens)return;const n=ri(1,Math.ceil(S.hens/3));S.hens-=n;return `A fox got into the henhouse. Lost ${n} hen${n>1?"s":""}.`},
+  ()=>{if(!active())return;S.land.plots.forEach(p=>{if(p.s==="grow")p.age=Math.min(p.age+1,CROPS[p.crop].grow-1)});return "Good steady rain. Crops grow faster."},
+  ()=>{if(!active())return;S.land.plots.forEach(p=>{if(p.s==="grow")p.f*=.8});return "A dry spell. Standing crops will yield less."},
+  ()=>{const n=ri(20,60);S.money+=n;return `The rural workers' union sends R$${n} in support.`},
+  ()=>{for(const k in S.prices)S.prices[k]=+(S.prices[k]*1.5).toFixed(2);return "Agrarian reform fair in town this month: prices up 50%."},
+  ()=>{if(S.cas){S.cas.defense+=6;return "A newspaper reports on the camp. Public opinion helps your defense (+6)."}},
+  ()=>{S.inv.feijao+=5;S.inv.milho+=5;return "Seed exchange with a nearby settlement: +5 feijão, +5 milho."},
+  ()=>{if(S.families>=8)return;S.families++;return "A family from the city periphery joins the camp."},
+  ()=>{S.land.fert=+(S.land.fert+.05).toFixed(2);return "A university extension team teaches green manuring. Soil improves."}
+];
+function endMonth(travel){
+  if(!travel) S.land.plots.forEach(p=>{if(p.s==="grow"){p.age++;if(p.age>=CROPS[p.crop].grow)p.s="ready"}});
+  chickens();
+  eat(S.goats*3);
+  if(S.families<=0){S.phase="lost";S.t++;save();render();openEnd();return}
+  const food=S.inv.ovos+S.inv.mandioca+S.inv.milho+S.inv.feijao;
+  if(!travel&&food>=S.families*10&&S.families<8&&Math.random()<.3){S.families++;log("Word spreads that the camp eats well. A new family arrives.")}
+  if(!travel) legal();
+  if(S.phase!=="play"){S.t++;S.labor=laborMax();save();render();return}
+  if(!travel&&Math.random()<.3){const m=pick(EVENTS)();if(m)log(m)}
+  S.t++; S.acted={}; S.labor=laborMax(); S.prices=newPrices();
+}
+function legal(){
+  const L=S.land;
+  if(!S.discovered){
+    const pr=.03+.015*active()*L.vigil+(S.hens>12?.02:0);
+    if(Math.random()<pr){
+      S.discovered=true;
+      S.cas={owner:L.owner+ri(0,8),defense:Math.round(L.idle*1.5),months:6,laudo:0};
+      log(`The owner found the occupation and filed for repossession. Hearing in 6 months.`);
+      showInfo("The owner found out",`${ownerKind(L)} filed a repossession suit (<em>ação de reintegração de posse</em>). The hearing is in six months. Fund lawyers, request an INCRA inspection, and keep the land producing to show it fulfils its social function.`);
+    }
+    return;
+  }
+  const C=S.cas;
+  C.defense+=defenseTick(); C.owner+=L.growth; C.months--;
+  if(C.months<=0){
+    if(C.defense>=C.owner){S.phase="won";log(`The judge rules for expropriation. ${L.name} becomes a settlement.`);openEnd()}
+    else{S.phase="evict";S.evictions++;log(`The judge orders eviction. The camp must leave ${L.name}.`);moveSel=null;take=null;S.choices=[genLand(),genLand(),genLand()];openMove(true)}
+  }
+}
+
+/* ---------- modals ---------- */
+const ov=document.getElementById("ov"), md=document.getElementById("modal");
+function show(html){md.innerHTML=html;ov.hidden=false}
+function hide(){ov.hidden=true;render()}
+function showInfo(t,body){setTimeout(()=>show(`<h2>${t}</h2><p>${body}</p><div class="bar"><button class="btn go" id="okb">Understood</button></div>`),0)}
+md.addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b||b.disabled)return;
+  if(b.id==="okb"){hide();return}
+  const d=b.dataset;
+  if(d.close){hide();return}
+  if(d.tab){marketTab=d.tab;openMarket();return}
+  if(d.sell){const k=d.sell,n=Math.min(+d.n,S.inv[k]);S.inv[k]-=n;S.money+=n*S.prices[k];save();openMarket();return}
+  if(d.buy){buy(d.buy);save();openMarket();return}
+  if(d.land!=null){moveSel=+d.land;if(S.phase!=="choose"&&!take)take=defaultTake();(S.phase==="choose"?openChoose:()=>openMove(S.phase==="evict"))();return}
+  if(d.tk){const [k,dl]=[d.tk,+d.dl];take[k]=Math.max(0,Math.min(have(k),take[k]+dl));openMove(S.phase==="evict");return}
+  if(d.settle){settle();return}
+  if(d.go){doMove();return}
+  if(d.restart){newGame();render();openChoose();return}
+});
+ov.addEventListener("click",e=>{if(e.target===ov&&S.phase==="play")hide()});
+
+const SHOP=[
+  {k:"feijao",label:"5 Feijão seed",cost:()=>Math.ceil(S.prices.feijao*1.5*5),do:()=>S.inv.feijao+=5},
+  {k:"milho",label:"5 Milho seed",cost:()=>Math.ceil(S.prices.milho*1.5*5),do:()=>S.inv.milho+=5},
+  {k:"mandioca",label:"5 Mandioca cuttings",cost:()=>Math.ceil(S.prices.mandioca*1.5*5),do:()=>S.inv.mandioca+=5},
+  {k:"hen",label:"Laying hen",note:"3 eggs/mo when fed",cost:()=>15,do:()=>S.hens++},
+  {k:"goat",label:"Dairy goat",note:"3 food/mo, walks with you",cost:()=>60,do:()=>S.goats++},
+  {k:"hoe",label:"Hoe",note:"+1 labor every month",cost:()=>30,do:()=>S.tools++},
+  {k:"cart",label:"Ox cart",note:"+60 carrying capacity",cost:()=>120,do:()=>S.carts++},
+  {k:"well",label:"Dig a well here",note:"full yield in dry season · stays on this land",cost:()=>80,do:()=>S.land.well=true,once:()=>S.land.well}
+];
+function buy(k){const it=SHOP.find(x=>x.k===k);const c=it.cost();if(S.money>=c){S.money-=c;it.do();log(`Bought: ${it.label}.`)}}
+function openMarket(){
+  const sell=["feijao","milho","mandioca","ovos"].map(k=>{const nm=k==="ovos"?"Eggs":CROPS[k].name;
+    return `<div class="row"><span>${nm} <span class="calm">· ${S.inv[k]} · R$${S.prices[k].toFixed(2)}</span></span><span class="ctl">
+    <button class="btn" data-sell="${k}" data-n="1" ${S.inv[k]<1?"disabled":""}>Sell 1</button>
+    <button class="btn" data-sell="${k}" data-n="10" ${S.inv[k]<1?"disabled":""}>Sell 10</button></span></div>`}).join("");
+  const buyH=SHOP.map(it=>{const done=it.once&&it.once();return `<div class="row"><span>${it.label}${it.note?` <span class="calm">· ${it.note}</span>`:""}</span><span class="ctl">
+    <button class="btn" data-buy="${it.k}" ${done||S.money<it.cost()?"disabled":""}>${done?"Done":"R$"+it.cost()}</button></span></div>`}).join("");
+  show(`<div class="landhead"><h2>Feira</h2><span class="chip">R$ <b>${S.money.toFixed(2)}</b></span></div>
+  <p>Prices change every month. Keep enough food: families eat ${S.families*2} a month.</p>
+  <div class="tabs"><button class="btn ${marketTab==="sell"?"on":""}" data-tab="sell">Sell</button><button class="btn ${marketTab==="buy"?"on":""}" data-tab="buy">Buy</button></div>
+  <div>${marketTab==="sell"?sell:buyH}</div>
+  <div class="bar"><button class="btn go" data-close="1">Back to the camp</button></div>`);
+}
+function landCard(l,i){return `<button class="landc ${moveSel===i?"on":""}" data-land="${i}"><strong>${l.name}</strong>
+  <span class="calm">${l.region} · ${l.km} km away</span>
+  <span class="facts"><span><b>${l.idle} yrs</b> unused</span><span><b>${fertLabel(l)}</b></span><span><b>${l.size}</b> plots</span><span>${ownerKind(l)}</span><span>${vigilLabel(l)}</span></span></button>`}
+function openChoose(){
+  show(`<h2>Where do we pitch the tarps?</h2>
+  <p>Three families, five hens and plenty of seed. Pick an idle estate to occupy. Long-unused land is easier to defend in court. Big agribusiness owners hire stronger lawyers.</p>
+  <div class="lands">${S.choices.map(landCard).join("")}</div>
+  <div class="bar"><button class="btn go" data-settle="1" ${moveSel==null?"disabled":""}>Occupy this land</button></div>`);
+}
+function settle(){
+  S.land=S.choices[moveSel];S.landsCount=1;S.phase="play";S.labor=laborMax();
+  log(`Tarps go up at ${S.land.name}, ${S.land.region}.`);hide();save();
+}
+const cap=()=>S.families*15+S.carts*60;
+const have=k=>k==="hens"?S.hens:k==="chicks"?S.chicks.length:k==="tools"?S.tools:S.inv[k];
+const W={feijao:1,milho:1,mandioca:1,ovos:1,hens:1,chicks:1,tools:2};
+const TAKEK=[["hens","Hens"],["chicks","Chicks"],["milho","Milho"],["feijao","Feijão"],["mandioca","Mandioca"],["ovos","Eggs"],["tools","Hoes"]];
+const weight=t=>Object.keys(W).reduce((s,k)=>s+t[k]*W[k],0);
+function defaultTake(){const t={};let room=cap();for(const [k] of TAKEK){const n=Math.max(0,Math.min(have(k),Math.floor(room/W[k])));t[k]=n;room-=n*W[k]}return t}
+function openMove(forced){
+  if(!take)take=defaultTake();
+  const w=weight(take),c=cap(),over=w>c;
+  const left=S.land.plots.filter(p=>p.s==="grow"||p.s==="ready").length;
+  show(`<h2>${forced?"Eviction order":"Move the camp"}</h2>
+  <p>${forced?`The court ruled for the owner. The camp has to leave ${S.land.name}.`:`Leaving drops any court case here.`} Crops in the ground${S.land.well?", the well":""} and anything you can't carry stay behind.${left?` ${left} planted plot${left>1?"s":""} will be lost.`:""} Goats walk with you; money weighs nothing.</p>
+  <span class="label">Choose the next estate</span>
+  <div class="lands">${S.choices.map(landCard).join("")}</div>
+  <span class="label">Pack the trucks</span>
+  <div class="meter cap ${over?"over":""}" style="grid-template-columns:90px 1fr 70px"><span>Load</span><div class="track"><i style="width:${Math.min(100,w/c*100)}%"></i></div><b>${w}/${c}</b></div>
+  <div>${TAKEK.filter(([k])=>have(k)>0).map(([k,nm])=>{const step=W[k]===1&&have(k)>10?5:1;return `<div class="row"><span>${nm} <span class="calm">· have ${have(k)}</span></span><span class="ctl">
+    <button class="btn" data-tk="${k}" data-dl="-${step}">−${step}</button><span class="n">${take[k]}</span><button class="btn" data-tk="${k}" data-dl="${step}">+${step}</button></span></div>`}).join("")}</div>
+  <span class="calm">Capacity: 15 per family${S.carts?` plus 60 per ox cart`:""}. The journey takes a month, and the families eat on the road.</span>
+  <div class="bar">${forced?"":`<button class="btn" data-close="1">Stay here</button>`}<button class="btn go" data-go="1" ${moveSel==null||over?"disabled":""}>${over?"Too heavy":"Pack up and go"}</button></div>`);
+}
+function doMove(){
+  const dest=S.choices[moveSel];
+  S.inv={feijao:take.feijao,milho:take.milho,mandioca:take.mandioca,ovos:take.ovos};
+  S.hens=take.hens;S.chicks=S.chicks.slice(0,take.chicks);S.tools=take.tools;
+  const from=S.land.name;
+  S.land=dest;S.discovered=false;S.cas=null;S.sel=null;S.landsCount++;S.phase="play";
+  log(`The camp leaves ${from} and travels ${dest.km} km to ${dest.name}, ${dest.region}.`);
+  endMonth(true);
+  moveSel=null;take=null;
+  if(S.phase==="play"){hide();save()}
+}
+function openEnd(){
+  const won=S.phase==="won";
+  setTimeout(()=>show(`<h2>${won?`${S.land.name} is a settlement`:"The camp disbanded"}</h2>
+  <p>${won?`The court ordered the estate expropriated for agrarian reform. ${S.families} families get title to the land after ${S.t} months and ${S.landsCount} occupation${S.landsCount>1?"s":""}.`:`Hunger drove the last family away after ${S.t} months. Keep more food in store and plant in the rainy season.`}</p>
+  <div class="inv"><div><b>${S.t}</b>Months</div><div><b>${S.landsCount}</b>Estates occupied</div><div><b>${S.evictions}</b>Evictions</div><div><b>${S.families}</b>Families</div><div><b>${S.hens}</b>Hens</div><div><b>${S.goats}</b>Goats</div></div>
+  <div class="bar"><button class="btn go" data-restart="1">Start a new camp</button></div>`),0);
+}
+
+/* ---------- boot ---------- */
+function start(data){
+  S=data&&data.S;
+  if(!S){try{S=JSON.parse(localStorage.getItem("lonapreta"))}catch(e){S=null}}
+  if(!S||!S.inv){newGame()}
+  render();
+  if(S.phase==="choose")openChoose();
+  else if(S.phase==="evict"){S.choices=S.choices||[genLand(),genLand(),genLand()];openMove(true)}
+  else if(S.phase==="won"||S.phase==="lost")openEnd();
+}
+window.claude?.hot?.snapshot?.(()=>({S}));
+window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+</script>
 </body>
 </html>
