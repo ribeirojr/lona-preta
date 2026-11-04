@@ -50,9 +50,10 @@ A crop touches many places. Use `feijao` as the model and search for it:
 
 ## Add a region
 
-1. `REGIONS`: add the name. 2. `REGION_XY`: its `[lon,lat]` (south and west are negative; it must fall inside
-the Brazil outline). 3. `NAMES` must contain at least `CAMPS` names (it already has 18).
-`genCamps()` can then pick the region for a new game. Check on the map that it is more than 62 units from the other regions, or it will rarely be picked. Saves in progress keep their camps.
+1. `REGIONS`: add the name. 2. `REGION_SITES`: two real places `[lon,lat]` (south and west are negative), at least
+1.2 degrees apart and a little inland (camps get ~0.1 degree of jitter; the border and coast must stay outside it).
+`REGION_XY`, the region centre, is derived. 3. `NAMES` must contain at least `CAMPS` names (it already has 18).
+`genCamps()` can then pick the region for a new game. Check that its sites are more than 62 map units from other regions' sites, or it will rarely be picked. Saves in progress keep their camps.
 
 ## Change the number of camps
 

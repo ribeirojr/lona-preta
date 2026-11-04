@@ -97,7 +97,7 @@ When every camp is a settlement or lost, the game ends. The final screen tells y
 
 ### The map
 
-A stylized map of Brazil shows all your camps. Positions are approximate and illustrative, not survey data.
+A map of Brazil (real border data) shows all your camps. Each camp sits near a real municipality of its region, such as Rosana or Bagé, though the estates themselves are fictional.
 
 - Each camp is a marker with its name. It is red where the land is idle and fills green as plots go into production, so the effect of your farming is visible. A gold ring means the camp is a settlement, and a ✕ means it is lost.
 - The camp on screen has a highlighted ring. Tap any marker to go to that camp.

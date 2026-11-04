@@ -23,7 +23,7 @@ scripts/drivers/    small click-through scripts used by shot.mjs
 |---|---|---|
 | 1 | THEME | `THEMES`, `applyTheme`, `toggleTheme`, `themeBtn`. Picks the mode and the language |
 | 2 | I18N | The `I18N` dictionary (`en`, `pt`) between `/* i18n:begin */` and `/* i18n:end */`, plus `tr()` |
-| 3 | DATA | Constants: `CROPS`, `NAMES`, `REGIONS`, `REGION_XY`, `BR` (Brazil outline), `geo()`, random helpers |
+| 3 | DATA | Constants: `CROPS`, `NAMES`, `REGIONS`, `REGION_SITES`, `REGION_XY`, `BR` (Brazil outline), `geo()`, random helpers |
 | 4 | STATE | `S`, `K()` (camp on screen), `newGame`, `genCamps`, `makeCamp`, `genLand`, `log`, `save`, label helpers (`ownerKind`...) |
 | 5 | PLOT ART | `art(plot)` returns inline SVG for one plot |
 | 6 | RENDER | `render()` rebuilds the whole main screen into `#app`, `campTabs()`, `banner()` |
@@ -94,9 +94,9 @@ Not saved (module variables): `marketTab`, `curModal`, `pending` (modals waiting
 
 ## The map
 
-- `BR` is a hand-made outline of Brazil as `[lon,lat]` pairs. `geo(lon,lat)` projects to a 400x410 SVG
-  viewBox (equirectangular; the outline fills 395, the rest leaves room for a label under the southernmost camp). `REGION_XY` gives each region a centre. Positions are illustrative, not survey data.
-- `genCamps(n)` picks `n` different regions whose centres are more than 62 map units apart (so markers and labels do not overlap), and nudges each camp a little off the centre.
+- `BR` is the border of Brazil as `[lon,lat]` pairs (Natural Earth 1:50m, public domain, simplified to ~7 km). `geo(lon,lat)` projects to a 412x410 SVG
+  viewBox (equirectangular; the border fills 395, the rest leaves room for a label under the southernmost camp). `REGION_SITES` pins two real municipalities per region (`REGION_XY` is their midpoint).
+- `genCamps(n)` picks `n` different regions, puts each camp near one of the region's two sites (about 10 km of random jitter), and retries until all markers are more than 62 map units apart so markers and labels do not overlap.
 - Every camp has a marker with `data-camp="i"`. Clicking it (or its tab) sets `S.cur`.
 
 ## Several camps at once
