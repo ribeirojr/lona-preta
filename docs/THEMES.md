@@ -19,7 +19,7 @@ All colours are CSS variables defined at the top of the `<style>` block. Nothing
 | `--line` | `#363a3b` | `#c3d1ae` | borders |
 | `--chalk` | `#efe7d3` | `#0d2240` | main text |
 | `--dim` | `#a69d89` | `#4a5a6b` | secondary text |
-| `--clay` | `#c24a2f` | `#c8452a` | idle land, danger, owner's case, evicted |
+| `--clay` | `#c24a2f` | `#c8452a` | idle land, danger, owner's case, lost camps |
 | `--leaf` | `#77a94b` | `#08873a` | productive land, your defense, "quiet" |
 | `--corn` | `#e9b62c` | `#fedd00` | flag yellow: harvest button, ready badge. **Not for text or outlines** |
 | `--accent` | `#e9b62c` | `#002776` | selection rings, focus outline, route line, cost numbers |

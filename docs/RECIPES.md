@@ -25,48 +25,44 @@ See the checklist in [I18N.md](I18N.md#adding-a-new-string-checklist).
 ## Add a random event
 
 1. Add `ev.myEvent` (and `ev.myEvent_1` if it has a count that can be 1) to `en` and `pt`.
-2. Add a function to the `EVENTS` array in section 9. It changes `S` and returns `["ev.myEvent",{n}]`,
+2. Add a function to the `EVENTS` array in section 9. It receives the camp `k`, changes it and returns `["ev.myEvent",{n}]`,
    or returns nothing if the event does not apply (for example "no hens to lose").
-3. Events fire with about a 30% chance per month (`endMonth`). Nothing else to wire.
+3. Events fire with about a 30% chance per camp per month (`tickCamp`). Nothing else to wire.
 
 ## Add a shop item
 
-1. Add to `SHOP` (section 10): `{k:"plow",cost:()=>90,do:()=>S.plows++}`. Use `once:()=>...` if it can be bought only once.
+1. Add to `SHOP` (section 10): `{k:"plow",cost:()=>90,do:k=>k.plows++}`. Use `once:k=>k.plows` if it can be bought only once. `k` is the camp on screen.
 2. Add `shop.plow` and, optionally, `shop.plow.note` to both languages.
-3. If it is a new thing the player owns: add the field to `newGame()`, show it in the Stores panel in `render()`
-   (new `store.plows` key in both languages), and handle old saves in `start()` (`S.plows=S.plows||0`).
-4. If it should be carried when moving: add it to `W` (weight) and `TAKEK`, and restore it in `doMove()`.
+3. If it is a new thing the camp owns: add the field to `makeCamp()`, show it in the Stores panel in `render()`
+   (new `store.plows` key in both languages), and handle saves that lack it (in `start()`, `S.camps.forEach(k=>k.plows=k.plows||0)`).
 
 ## Add a crop
 
 A crop touches many places. Use `feijao` as the model and search for it:
 1. `CROPS`: `{name,grow,yield,price}`.
-2. `newGame()`: starting amount in `inv`.
+2. `makeCamp()`: starting amount in `inv`.
 3. `art(p)`: draw it (use `--art-*` variables only).
 4. `crop.<id>.gloss` in both languages (English `" (gloss)"`, Portuguese `""`).
 5. `SHOP`: a seed item, plus `shop.<id>` key in both languages.
 6. `openMarket`: add the id to the list `["feijao","milho","mandioca","ovos"]`.
-7. `TAKEK` and `W` (packing when moving), `doMove()` (the `S.inv={...}` line).
-8. `eat()`: add to the order in `["ovos","mandioca","milho","feijao"]` and to `food` in `endMonth()`.
-9. Old saves: in `start()` do `S.inv.<id>=S.inv.<id>||0`.
+7. `eat()`: add to the order in `["ovos","mandioca","milho","feijao"]` and to `food` in `tickCamp()`.
+8. Old saves: in `start()` do `S.camps.forEach(k=>k.inv.<id>=k.inv.<id>||0)`.
 
 ## Add a region
 
 1. `REGIONS`: add the name. 2. `REGION_XY`: its `[lon,lat]` (south and west are negative; it must fall inside
-the Brazil outline). 3. `NAMES` must contain at least `2 * REGIONS.length` names (add names if not).
-`genEstates()` then makes 2 estates there. Old saves keep their old estates.
+the Brazil outline). 3. `NAMES` must contain at least `CAMPS` names (it already has 18).
+`genCamps()` can then pick the region for a new game. Check on the map that it is more than 62 units from the other regions, or it will rarely be picked. Saves in progress keep their camps.
 
-## Change the cost of moving
+## Change the number of camps
 
-Edit `moveCost()` and `kmTo()` in section 7 (`10` base, `.03` per km, `1.3` road factor). Update the numbers in
-`README.md` and in [ARCHITECTURE.md](ARCHITECTURE.md). The text shown to the player takes the number from the function, so
-no translation changes are needed.
+Edit `CAMPS` (section 4). `genCamps()` needs that many regions that are far enough apart (62 map units), and the map and tabs show as many as there are. Four is the most that fits comfortably with 8 regions. Update the numbers in `README.md` and [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Change a game balance number
 
 Use the table "Game rules and where the numbers live" in [ARCHITECTURE.md](ARCHITECTURE.md). If the number also
 appears in a translated sentence (for example "R$30 · +6" in `case.lawyerCost`, "+6" in `ev.press`, "50%" in `ev.fair`,
-"15 per family" in `move.capacity`, "6 months" in `log.discovered`), update **both languages**.
+"6 months" in `log.discovered`), update **both languages**.
 
 ## Add a new modal
 

@@ -98,6 +98,7 @@ h1 span{color:var(--brand)}
 .log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px;font-size:13px;max-height:220px;overflow:auto}
 .log li{border-left:2px solid var(--line);padding-left:8px;color:var(--dim)}
 .log li:first-child{color:var(--chalk);border-color:var(--accent)}
+.log li b{color:var(--chalk);font-weight:500}
 .log li .m{font-variant-numeric:tabular-nums;color:var(--dim);margin-right:6px}
 details summary{cursor:pointer;font-weight:500}
 details p,details li{color:var(--dim);font-size:13px;max-width:68ch}
@@ -111,24 +112,30 @@ details ul{padding-left:18px;margin:6px 0}
 .lands{display:grid;gap:8px}
 .landc{text-align:left;background:var(--tarp-3);border:2px solid var(--line);border-radius:6px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
 .landc.on{border-color:var(--accent)}
+.landc.won{border-color:var(--leaf)}
+.landc.lost{border-color:var(--clay)}
 .landc strong{font-family:var(--display);font-weight:400;font-size:17px}
 .row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);font-size:14px;font-variant-numeric:tabular-nums}
 .row:last-child{border-bottom:0}
 .row .ctl{display:flex;gap:4px;align-items:center}
 .row .ctl .btn{padding:4px 9px}
 .row .n{min-width:3ch;text-align:right}
-.cap .track i{background:var(--accent)}
-.cap.over .track i{background:var(--clay)}
 .map{width:100%;max-width:440px;height:auto;margin:0 auto;display:block}
 .map .br{fill:var(--tarp-3);stroke:var(--line);stroke-width:1.5;stroke-linejoin:round}
 .map text{fill:var(--chalk);font-size:11px;paint-order:stroke;stroke:var(--tarp-2);stroke-width:3px;stroke-linejoin:round}
 .map .cand{cursor:pointer;outline:none}
 .map .cand:hover circle,.map .cand:focus-visible circle{stroke:var(--accent)}
 .map text.c{font-size:11px;font-weight:700}
-.map .route{stroke:var(--accent);stroke-width:1.5;stroke-dasharray:4 4;fill:none}
-.cost{font-size:13px;color:var(--dim)}.cost b{color:var(--accent)}
 .legend{display:flex;flex-wrap:wrap;gap:4px 14px;justify-content:center;font-size:12px;color:var(--dim)}
 .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+.camps{display:flex;flex-wrap:wrap;gap:6px}
+.camps .btn{flex:1 1 130px;display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;padding:7px 11px}
+.camps .btn .n{font-family:var(--display);font-size:15px;font-weight:400}
+.camps .btn small{margin:0;font-size:12px}
+.camps .btn.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.camps .btn.hearing small,.camps .btn.lost small{color:var(--clay)}
+.camps .btn.won small{color:var(--leaf)}
+.camps .btn.lost .n{text-decoration:line-through}
 .tabs{display:flex;gap:6px}
 .tabs .btn.on{border-color:var(--accent)}
 .tbtn{align-self:flex-end;font-size:12px;padding:5px 10px}
@@ -195,13 +202,13 @@ const I18N={
 en:{
 "theme.toggle":"Modo Bandeira · PT",
 "theme.title":"Switch to the light Modo Bandeira (Português)",
-"app.tagline":"Occupy idle land, make it produce, defend it in court. If the judge orders you off, pack what you can carry.",
+"app.tagline":"Run several occupations at once. Farm each camp, defend it in court and turn every one into a settlement. Some may be lost for good.",
 "stat.rain":"Rains","stat.dry":"Dry","stat.families":"Families","stat.labor":"Labor",
+"stat.settled":"Settled",
 "month.0":"Jan","month.1":"Feb","month.2":"Mar","month.3":"Apr","month.4":"May","month.5":"Jun","month.6":"Jul","month.7":"Aug","month.8":"Sep","month.9":"Oct","month.10":"Nov","month.11":"Dec",
 "land.yrsUnused":"<b>{n} yrs</b> unused",
 "land.owner":"Owner: <b>{kind}</b>",
 "land.well":"Well dug",
-"land.plots":"<b>{n}</b> plots",
 "owner.heirs":"Heirs in a dispute","owner.absentee":"Absentee rancher","owner.agro":"Agribusiness group",
 "fert.poor":"Poor soil","fert.fair":"Fair soil","fert.rich":"Rich soil",
 "vigil.low":"Rarely visited","vigil.mid":"Occasional visits","vigil.high":"Watched by a caretaker",
@@ -216,7 +223,7 @@ en:{
 "act.growing":"{crop} growing: ready in {n} months.",
 "act.growing_1":"{crop} growing: ready in 1 month.",
 "act.dryHalf":" Planted in the dry season: half yield.",
-"act.market":"Go to the feira","act.move":"Move camp","act.next":"Next month →",
+"act.market":"Go to the feira","act.next":"Next month →",
 "case.title":"Repossession suit",
 "case.hearing":"Hearing in {n} months","case.hearing_1":"Hearing in 1 month",
 "case.defense":"Your defense","case.owner":"Owner's case",
@@ -224,81 +231,78 @@ en:{
 "case.lawyer":"Pay popular lawyers","case.lawyerCost":"R$30 · +6",
 "case.laudo":"Request INCRA inspection","case.laudoCost":"R$60 · +{n}",
 "case.mob":"Public mobilization","case.mobCost":"3 labor · +5",
+"tab.quiet":"Quiet",
+"tab.hearing":"Hearing in {n} mo",
+"tab.won":"Settlement",
+"tab.lost":"Lost",
+"tab.aria":"{name}: {status}",
+"camps.aria":"Your camps",
+"camp.wonNote":"The court ordered {name} expropriated for agrarian reform. {fam} families hold title to the land since {when}.",
+"camp.lostEvicted":"The judge ruled for the owner. The families were driven off {name} in {when}.",
+"camp.lostHunger":"Hunger drove the last family away from {name} in {when}.",
 "case.quiet":"Quiet for now","case.undiscovered":"Undiscovered",
 "case.quietNote":"{vigil}. The more plots you farm, the sooner the owner notices. When that happens, the suit begins and you fund the defense.",
-"map.title":"Map · idle land",
+"map.title":"Map · your camps",
 "map.won":"Settlement won",
+"map.lost":"Lost for good",
 "map.inProd":"{a}/{b} plots in production",
-"map.moveHere":"Move camp here",
-"map.hint":"Tap an idle estate on the map to see what it costs to move there.",
-"map.aria":"Map of Brazil showing idle estates you can move to and your camp",
-"map.you":"Your camp","map.settlement":"Settlement",
+"map.hint":"Tap a camp on the map or in the tabs to go there.",
+"map.aria":"Map of Brazil showing all your camps",
 "map.tipCamp":"{name}: {a} of {b} plots in production",
-"map.tipEvicted":"{name}: evicted",
-"map.tip":"{name}: idle {idle} yrs, {size} plots",
-"map.tipCost":"{name}: idle {idle} yrs, {size} plots, {km} km, R${c} to move",
-"map.legendIdle":"Idle estate","map.legendCostly":"Too costly to reach now","map.legendProd":"In production","map.legendEvicted":"Evicted",
-"estate.far":"{region} · {km} km away",
-"estate.cost":"Trucks and fuel to move here: <b>R${c}</b>",
-"store.title":"Stores","store.eggs":"Eggs","store.hens":"Hens","store.chicks":" + {n} chicks","store.goats":"Goats","store.hoes":"Hoes","store.carts":"Ox carts",
-"store.eat":"Families eat {n} food a month. Hens lay more when fed corn (1 per 3 hens).",
+"map.tipWon":"{name}: settlement",
+"map.tipLost":"{name}: lost for good",
+"map.legendProd":"In production",
+"map.legendCamp":"Camp",
+"map.legendWon":"Settlement",
+"map.legendLost":"Lost","store.title":"Stores","store.eggs":"Eggs","store.hens":"Hens","store.chicks":" + {n} chicks","store.goats":"Goats","store.hoes":"Hoes","store.eat":"Families eat {n} food a month. Hens lay more when fed corn (1 per 3 hens).",
 "crop.feijao.gloss":" (beans)","crop.milho.gloss":" (corn)","crop.mandioca.gloss":" (cassava)",
-"log.title":"Camp log","log.start":"Start",
+"log.title":"Movement log","log.start":"Start",
 "howto.title":"How to play",
 "howto.1":"Clear scrub, plant from your seed stock, and harvest when ready. Harvests refill your seed stock and feed the camp.",
 "howto.2":"Planting in the rainy season (Oct–Mar) gives full yield. Dry-season planting gives half, unless you dig a well.",
-"howto.3":"Hens lay eggs and hatch chicks. Sell surplus at the feira to fund lawyers and buy goats, hoes or an ox cart.",
+"howto.3":"Hens lay eggs and hatch chicks. Sell surplus at the feira to fund lawyers and buy goats, hoes or a well. Every camp keeps its own money, stores and families.",
 "howto.4":"The Brazilian Constitution (art. 184–186) lets land that fails its social function be expropriated for agrarian reform. Long-idle land and real production strengthen your defense.",
-"howto.5":"Win the hearing and the land becomes your settlement. Lose and you must move, taking only what you can carry. Crops in the ground and wells stay behind.",
-"howto.6":"If hunger drives every family away, the camp ends.",
+"howto.5":"Win a hearing and that camp becomes a settlement for good. Lose it and the families are driven off: the camp is lost for good.",
+"howto.6":"Hunger can end a camp too, when its last family leaves.",
+"howto.7":"Switch camps with the tabs or the map. Next month moves every camp forward at once. The game ends when each camp is either a settlement or lost.",
 "market.title":"Feira",
 "market.note":"Prices change every month. Keep enough food: families eat {n} a month.",
 "market.sell":"Sell","market.buy":"Buy","market.sell1":"Sell 1","market.sell10":"Sell 10","market.back":"Back to the camp","market.done":"Done",
 "shop.feijao":"5 Feijão seed","shop.milho":"5 Milho seed","shop.mandioca":"5 Mandioca cuttings",
 "shop.hen":"Laying hen","shop.hen.note":"3 eggs/mo when fed",
-"shop.goat":"Dairy goat","shop.goat.note":"3 food/mo, walks with you",
+"shop.goat":"Dairy goat","shop.goat.note":"3 food/mo",
 "shop.hoe":"Hoe","shop.hoe.note":"+1 labor every month",
-"shop.cart":"Ox cart","shop.cart.note":"+60 carrying capacity",
 "shop.well":"Dig a well here","shop.well.note":"full yield in dry season · stays on this land",
-"choose.title":"Where do we pitch the tarps?",
-"choose.text":"Three families, five hens and plenty of seed. Pick an idle estate to occupy. Long-unused land is easier to defend in court. Big agribusiness owners hire stronger lawyers.",
-"choose.hint":"Tap an idle estate on the map.",
-"choose.go":"Occupy this land",
-"move.titleForced":"Eviction order","move.title":"Move the camp",
-"move.forced":"The court ruled for the owner. The camp has to leave {name}.",
-"move.voluntary":"Leaving drops any court case here.",
-"move.stay":"Crops in the ground and anything you can't carry stay behind.",
-"move.stayWell":"Crops in the ground, the well and anything you can't carry stay behind.",
-"move.lost":"{n} planted plots will be lost.","move.lost_1":"{n} planted plot will be lost.",
-"move.goats":"Goats walk with you; money weighs nothing, but the trucks and fuel cost money.",
-"move.goatsUnion":"Goats walk with you; money weighs nothing, but the trucks and fuel cost money (the union covers what you can't pay).",
-"move.choose":"Choose the next estate","move.pack":"Pack the trucks","move.load":"Load","move.have":"have {n}",
-"move.capacity":"Capacity: 15 per family. The journey takes a month, and the families eat on the road.",
-"move.capacityCart":"Capacity: 15 per family plus 60 per ox cart. The journey takes a month, and the families eat on the road.",
-"move.stayBtn":"Stay here","move.tooHeavy":"Too heavy","move.need":"Need R${n}","move.go":"Pack up and go","move.goCost":"Pack up and go · R${n}",
-"take.chicks":"Chicks",
-"end.wonTitle":"{name} is a settlement","end.lostTitle":"The camp disbanded",
-"end.won":"The court ordered the estate expropriated for agrarian reform. {fam} families get title to the land after {t} months and {occ}.",
-"end.occ":"{n} occupations","end.occ_1":"1 occupation",
-"end.lost":"Hunger drove the last family away after {t} months. Keep more food in store and plant in the rainy season.",
-"end.months":"Months","end.estates":"Estates occupied","end.evictions":"Evictions","end.families":"Families","end.hens":"Hens","end.goats":"Goats",
-"end.restart":"Start a new camp",
-"info.ownerTitle":"The owner found out",
-"info.ownerBody":"{kind} filed a repossession suit (<em>ação de reintegração de posse</em>). The hearing is in six months. Fund lawyers, request an INCRA inspection, and keep the land producing to show it fulfils its social function.",
+"end.won":"Settlements",
+"end.lost":"Lost for good",
+"end.titleAll":"Every camp is now a settlement",
+"end.titleSome":"{w} of {total} camps won their land",
+"end.titleNone":"No camp survived",
+"end.bodyAll":"The court expropriated all {total} estates for agrarian reform. {fam} families hold title to the land after {t} months.",
+"end.bodySome":"Settlements: {w} of {total}. {fam} families hold title to the land after {t} months. The rest were lost for good, by eviction or hunger.",
+"end.bodyNone":"Every camp was lost, by eviction or hunger, after {t} months. Keep more food in store, plant in the rainy season and fund the defense early.",
+"end.months":"Months","end.families":"Families","end.restart":"Start over",
+"info.ownerTitle":"The owner of {name} found out",
+"info.ownerBody":"{kind} filed a repossession suit (<em>ação de reintegração de posse</em>) against {name}. The hearing is in six months. Fund lawyers, request an INCRA inspection, and keep the land producing to show it fulfils its social function.",
 "info.ok":"Understood",
-"log.begin":"Three families, five hens and sacks of seed. The camp needs a place to put down roots.",
-"log.settle":"Tarps go up at {name}, {region}.",
+"info.wonTitle":"{name} is a settlement",
+"info.wonBody":"The court ordered the estate expropriated for agrarian reform. {fam} families get title to the land. This camp is secured for good.",
+"info.evictTitle":"{name} is lost",
+"info.evictBody":"The judge ruled for the owner and the families were driven off the land. This camp is lost for good.",
+"info.hungerTitle":"{name} disbanded",
+"info.hungerBody":"Hunger drove the last family away. This camp is lost for good. Keep more food in store and plant in the rainy season.",
+"log.begin":"{n} occupations begin at once, in different regions. Each camp has its own families, stores and court case.",
 "log.harvest":"Harvested {n} {crop}.",
 "log.lawyer":"Paid the popular lawyers. They file a contestation.",
 "log.laudo":"INCRA inspection confirms {n} years without production.",
 "log.mob":"Families march to the courthouse. The press takes notice.",
 "log.bought":"Bought: {item}.",
 "log.hunger":"Not enough food. A family left the camp.",
+"log.disbanded":"The last family leaves. The camp is lost for good.",
 "log.eatsWell":"Word spreads that the camp eats well. A new family arrives.",
 "log.discovered":"The owner found the occupation and filed for repossession. Hearing in 6 months.",
 "log.won":"The judge rules for expropriation. {name} becomes a settlement.",
-"log.evicted":"The judge orders eviction. The camp must leave {name}.",
-"log.moved":"The camp leaves {from} and travels {km} km to {name}, {region}. Trucks and fuel: R${paid}.",
+"log.evicted":"The judge orders eviction from {name}. The camp is lost for good.",
 "ev.fox":"A fox got into the henhouse. Lost {n} hens.","ev.fox_1":"A fox got into the henhouse. Lost 1 hen.",
 "ev.rain":"Good steady rain. Crops grow faster.",
 "ev.drySpell":"A dry spell. Standing crops will yield less.",
@@ -312,13 +316,13 @@ en:{
 pt:{
 "theme.toggle":"Night mode · EN",
 "theme.title":"Mudar para o modo noturno (escuro, English)",
-"app.tagline":"Ocupe a terra ociosa, faça-a produzir, defenda-a no tribunal. Se o juiz mandar você sair, leve o que puder carregar.",
+"app.tagline":"Conduza várias ocupações ao mesmo tempo. Cultive cada acampamento, defenda-o no tribunal e faça de todos assentamentos. Alguns podem se perder para sempre.",
 "stat.rain":"Chuvas","stat.dry":"Seca","stat.families":"Famílias","stat.labor":"Trabalho",
+"stat.settled":"Assentados",
 "month.0":"Jan","month.1":"Fev","month.2":"Mar","month.3":"Abr","month.4":"Mai","month.5":"Jun","month.6":"Jul","month.7":"Ago","month.8":"Set","month.9":"Out","month.10":"Nov","month.11":"Dez",
 "land.yrsUnused":"<b>{n} anos</b> sem uso",
 "land.owner":"Dono: <b>{kind}</b>",
 "land.well":"Poço cavado",
-"land.plots":"<b>{n}</b> lotes",
 "owner.heirs":"Herdeiros em disputa","owner.absentee":"Fazendeiro ausente","owner.agro":"Grupo do agronegócio",
 "fert.poor":"Solo pobre","fert.fair":"Solo razoável","fert.rich":"Solo rico",
 "vigil.low":"Raramente visitada","vigil.mid":"Visitas ocasionais","vigil.high":"Vigiada por um caseiro",
@@ -333,7 +337,7 @@ pt:{
 "act.growing":"{crop} crescendo: pronto em {n} meses.",
 "act.growing_1":"{crop} crescendo: pronto em 1 mês.",
 "act.dryHalf":" Plantado na seca: metade da colheita.",
-"act.market":"Ir à feira","act.move":"Mudar o acampamento","act.next":"Próximo mês →",
+"act.market":"Ir à feira","act.next":"Próximo mês →",
 "case.title":"Ação de reintegração de posse",
 "case.hearing":"Audiência em {n} meses","case.hearing_1":"Audiência em 1 mês",
 "case.defense":"Sua defesa","case.owner":"Argumento do dono",
@@ -341,81 +345,78 @@ pt:{
 "case.lawyer":"Pagar advogados populares","case.lawyerCost":"R$30 · +6",
 "case.laudo":"Pedir vistoria do INCRA","case.laudoCost":"R$60 · +{n}",
 "case.mob":"Mobilização pública","case.mobCost":"3 trabalho · +5",
+"tab.quiet":"Tudo calmo",
+"tab.hearing":"Audiência em {n} m",
+"tab.won":"Assentamento",
+"tab.lost":"Perdido",
+"tab.aria":"{name}: {status}",
+"camps.aria":"Seus acampamentos",
+"camp.wonNote":"O tribunal ordenou a desapropriação de {name} para a reforma agrária. {fam} famílias têm o título da terra desde {when}.",
+"camp.lostEvicted":"O juiz decidiu a favor do dono. As famílias foram expulsas de {name} em {when}.",
+"camp.lostHunger":"A fome levou embora a última família de {name} em {when}.",
 "case.quiet":"Tudo calmo por enquanto","case.undiscovered":"Ainda não descobertos",
 "case.quietNote":"{vigil}. Quanto mais lotes você cultiva, mais cedo o dono percebe. Quando isso acontece, a ação começa e você financia a defesa.",
-"map.title":"Mapa · terra ociosa",
+"map.title":"Mapa · seus acampamentos",
 "map.won":"Assentamento conquistado",
+"map.lost":"Perdido para sempre",
 "map.inProd":"{a}/{b} lotes em produção",
-"map.moveHere":"Mudar para cá",
-"map.hint":"Toque em uma fazenda ociosa no mapa para ver quanto custa se mudar para lá.",
-"map.aria":"Mapa do Brasil com as fazendas ociosas para onde você pode ir e o seu acampamento",
-"map.you":"Seu acampamento","map.settlement":"Assentamento",
+"map.hint":"Toque em um acampamento no mapa ou nas abas para ir até ele.",
+"map.aria":"Mapa do Brasil com todos os seus acampamentos",
 "map.tipCamp":"{name}: {a} de {b} lotes em produção",
-"map.tipEvicted":"{name}: despejado",
-"map.tip":"{name}: ociosa há {idle} anos, {size} lotes",
-"map.tipCost":"{name}: ociosa há {idle} anos, {size} lotes, {km} km, R${c} para ir",
-"map.legendIdle":"Fazenda ociosa","map.legendCostly":"Cara demais agora","map.legendProd":"Em produção","map.legendEvicted":"Despejado",
-"estate.far":"{region} · a {km} km",
-"estate.cost":"Caminhões e combustível para ir: <b>R${c}</b>",
-"store.title":"Estoque","store.eggs":"Ovos","store.hens":"Galinhas","store.chicks":" + {n} pintinhos","store.goats":"Cabras","store.hoes":"Enxadas","store.carts":"Carroças de boi",
-"store.eat":"As famílias comem {n} de comida por mês. As galinhas botam mais quando comem milho (1 para cada 3 galinhas).",
+"map.tipWon":"{name}: assentamento",
+"map.tipLost":"{name}: perdido para sempre",
+"map.legendProd":"Em produção",
+"map.legendCamp":"Acampamento",
+"map.legendWon":"Assentamento",
+"map.legendLost":"Perdido","store.title":"Estoque","store.eggs":"Ovos","store.hens":"Galinhas","store.chicks":" + {n} pintinhos","store.goats":"Cabras","store.hoes":"Enxadas","store.eat":"As famílias comem {n} de comida por mês. As galinhas botam mais quando comem milho (1 para cada 3 galinhas).",
 "crop.feijao.gloss":"","crop.milho.gloss":"","crop.mandioca.gloss":"",
-"log.title":"Diário do acampamento","log.start":"Início",
+"log.title":"Diário do movimento","log.start":"Início",
 "howto.title":"Como jogar",
 "howto.1":"Limpe o mato, plante com o seu estoque de sementes e colha quando estiver pronto. As colheitas repõem o estoque de sementes e alimentam o acampamento.",
 "howto.2":"Plantar na estação das chuvas (out–mar) dá a colheita cheia. Plantar na seca dá metade, a menos que você cave um poço.",
-"howto.3":"As galinhas botam ovos e chocam pintinhos. Venda o excedente na feira para pagar advogados e comprar cabras, enxadas ou uma carroça de boi.",
+"howto.3":"As galinhas botam ovos e chocam pintinhos. Venda o excedente na feira para pagar advogados e comprar cabras, enxadas ou um poço. Cada acampamento tem seu próprio dinheiro, estoque e famílias.",
 "howto.4":"A Constituição brasileira (arts. 184–186) permite desapropriar para reforma agrária a terra que não cumpre sua função social. Terra parada há muito tempo e produção de verdade fortalecem sua defesa.",
-"howto.5":"Vença a audiência e a terra vira o seu assentamento. Perca e você precisa sair, levando só o que conseguir carregar. As lavouras plantadas e os poços ficam para trás.",
-"howto.6":"Se a fome levar embora todas as famílias, o acampamento acaba.",
+"howto.5":"Vença uma audiência e aquele acampamento vira assentamento para sempre. Perca e as famílias são expulsas: o acampamento está perdido para sempre.",
+"howto.6":"A fome também pode acabar com um acampamento, quando a última família vai embora.",
+"howto.7":"Troque de acampamento pelas abas ou pelo mapa. O próximo mês avança todos os acampamentos de uma vez. O jogo termina quando cada acampamento for um assentamento ou estiver perdido.",
 "market.title":"Feira",
 "market.note":"Os preços mudam todo mês. Guarde comida suficiente: as famílias comem {n} por mês.",
 "market.sell":"Vender","market.buy":"Comprar","market.sell1":"Vender 1","market.sell10":"Vender 10","market.back":"Voltar ao acampamento","market.done":"Feito",
 "shop.feijao":"5 sementes de Feijão","shop.milho":"5 sementes de Milho","shop.mandioca":"5 manivas de Mandioca",
 "shop.hen":"Galinha poedeira","shop.hen.note":"3 ovos/mês quando alimentada",
-"shop.goat":"Cabra leiteira","shop.goat.note":"3 de comida/mês, anda com você",
+"shop.goat":"Cabra leiteira","shop.goat.note":"3 de comida/mês",
 "shop.hoe":"Enxada","shop.hoe.note":"+1 de trabalho todo mês",
-"shop.cart":"Carroça de boi","shop.cart.note":"+60 de capacidade de carga",
 "shop.well":"Cavar um poço aqui","shop.well.note":"colheita cheia na seca · fica nesta terra",
-"choose.title":"Onde vamos armar as lonas?",
-"choose.text":"Três famílias, cinco galinhas e muita semente. Escolha uma fazenda ociosa para ocupar. Terra parada há muito tempo é mais fácil de defender no tribunal. Donos do grande agronegócio contratam advogados mais fortes.",
-"choose.hint":"Toque em uma fazenda ociosa no mapa.",
-"choose.go":"Ocupar esta terra",
-"move.titleForced":"Ordem de despejo","move.title":"Mudar o acampamento",
-"move.forced":"O tribunal decidiu a favor do dono. O acampamento precisa deixar {name}.",
-"move.voluntary":"Sair encerra qualquer processo aqui.",
-"move.stay":"As lavouras plantadas e tudo o que você não puder carregar ficam para trás.",
-"move.stayWell":"As lavouras plantadas, o poço e tudo o que você não puder carregar ficam para trás.",
-"move.lost":"{n} lotes plantados serão perdidos.","move.lost_1":"{n} lote plantado será perdido.",
-"move.goats":"As cabras vão com você; dinheiro não pesa, mas os caminhões e o combustível custam dinheiro.",
-"move.goatsUnion":"As cabras vão com você; dinheiro não pesa, mas os caminhões e o combustível custam dinheiro (o sindicato cobre o que você não puder pagar).",
-"move.choose":"Escolha a próxima fazenda","move.pack":"Carregue os caminhões","move.load":"Carga","move.have":"você tem {n}",
-"move.capacity":"Capacidade: 15 por família. A viagem leva um mês, e as famílias comem na estrada.",
-"move.capacityCart":"Capacidade: 15 por família mais 60 por carroça de boi. A viagem leva um mês, e as famílias comem na estrada.",
-"move.stayBtn":"Ficar aqui","move.tooHeavy":"Pesado demais","move.need":"Faltam R${n}","move.go":"Arrumar e partir","move.goCost":"Arrumar e partir · R${n}",
-"take.chicks":"Pintinhos",
-"end.wonTitle":"{name} é um assentamento","end.lostTitle":"O acampamento se desfez",
-"end.won":"O tribunal ordenou a desapropriação da fazenda para a reforma agrária. {fam} famílias recebem o título da terra depois de {t} meses e {occ}.",
-"end.occ":"{n} ocupações","end.occ_1":"1 ocupação",
-"end.lost":"A fome levou embora a última família depois de {t} meses. Guarde mais comida e plante na estação das chuvas.",
-"end.months":"Meses","end.estates":"Fazendas ocupadas","end.evictions":"Despejos","end.families":"Famílias","end.hens":"Galinhas","end.goats":"Cabras",
-"end.restart":"Começar um novo acampamento",
-"info.ownerTitle":"O dono descobriu",
-"info.ownerBody":"{kind} entrou com uma <em>ação de reintegração de posse</em>. A audiência é daqui a seis meses. Financie advogados, peça uma vistoria do INCRA e mantenha a terra produzindo para mostrar que ela cumpre sua função social.",
+"end.won":"Assentamentos",
+"end.lost":"Perdidos",
+"end.titleAll":"Todos os acampamentos viraram assentamentos",
+"end.titleSome":"{w} de {total} acampamentos conquistaram a terra",
+"end.titleNone":"Nenhum acampamento sobreviveu",
+"end.bodyAll":"O tribunal desapropriou as {total} fazendas para a reforma agrária. {fam} famílias têm o título da terra depois de {t} meses.",
+"end.bodySome":"Assentamentos: {w} de {total}. {fam} famílias têm o título da terra depois de {t} meses. Os demais foram perdidos para sempre, por despejo ou por fome.",
+"end.bodyNone":"Todos os acampamentos foram perdidos, por despejo ou por fome, depois de {t} meses. Guarde mais comida, plante na estação das chuvas e financie a defesa cedo.",
+"end.months":"Meses","end.families":"Famílias","end.restart":"Recomeçar",
+"info.ownerTitle":"O dono de {name} descobriu",
+"info.ownerBody":"{kind} entrou com uma <em>ação de reintegração de posse</em> contra {name}. A audiência é daqui a seis meses. Financie advogados, peça uma vistoria do INCRA e mantenha a terra produzindo para mostrar que ela cumpre sua função social.",
 "info.ok":"Entendi",
-"log.begin":"Três famílias, cinco galinhas e sacos de semente. O acampamento precisa de um lugar para criar raízes.",
-"log.settle":"As lonas são armadas em {name}, {region}.",
+"info.wonTitle":"{name} é um assentamento",
+"info.wonBody":"O tribunal ordenou a desapropriação da fazenda para a reforma agrária. {fam} famílias recebem o título da terra. Este acampamento está garantido para sempre.",
+"info.evictTitle":"{name} está perdido",
+"info.evictBody":"O juiz decidiu a favor do dono e as famílias foram expulsas da terra. Este acampamento está perdido para sempre.",
+"info.hungerTitle":"{name} se desfez",
+"info.hungerBody":"A fome levou embora a última família. Este acampamento está perdido para sempre. Guarde mais comida e plante na estação das chuvas.",
+"log.begin":"{n} ocupações começam ao mesmo tempo, em regiões diferentes. Cada acampamento tem suas próprias famílias, estoque e processo.",
 "log.harvest":"Colheita: {n} de {crop}.",
 "log.lawyer":"Pagou os advogados populares. Eles apresentam a contestação.",
 "log.laudo":"A vistoria do INCRA confirma {n} anos sem produção.",
 "log.mob":"As famílias marcham até o fórum. A imprensa repara.",
 "log.bought":"Comprou: {item}.",
 "log.hunger":"Comida insuficiente. Uma família deixou o acampamento.",
+"log.disbanded":"A última família vai embora. O acampamento está perdido para sempre.",
 "log.eatsWell":"Corre a notícia de que o acampamento come bem. Chega uma nova família.",
 "log.discovered":"O dono descobriu a ocupação e pediu a reintegração de posse. Audiência em 6 meses.",
 "log.won":"O juiz decide pela desapropriação. {name} vira um assentamento.",
-"log.evicted":"O juiz manda o despejo. O acampamento precisa deixar {name}.",
-"log.moved":"O acampamento deixa {from} e viaja {km} km até {name}, {region}. Caminhões e combustível: R${paid}.",
+"log.evicted":"O juiz manda o despejo de {name}. O acampamento está perdido para sempre.",
 "ev.fox":"Uma raposa entrou no galinheiro. {n} galinhas perdidas.","ev.fox_1":"Uma raposa entrou no galinheiro. 1 galinha perdida.",
 "ev.rain":"Chuva boa e constante. As lavouras crescem mais rápido.",
 "ev.drySpell":"Uma estiagem. As lavouras em pé vão render menos.",
@@ -447,7 +448,7 @@ const CROPS={
 const SEED_COST=2;
 const NAMES=["Santa Rita","Boa Esperança","São José","Três Irmãos","Barra Funda","Pau-d'Arco","Água Limpa","Lagoa Seca","Bela Vista","Cachoeira Grande","Santa Clara","Bom Retiro","Capão Alto","Serra Velha","Primavera","Nova Aliança","Rio Claro","Santa Fé"];
 const REGIONS=["Pontal do Paranapanema, SP","Sul do Pará","Zona da Mata, PE","Oeste do Paraná","Norte de Minas","Sertão da Bahia","Campanha Gaúcha","Bico do Papagaio, TO"];
-/* Approximate [lon,lat] of each region, and a coarse outline of Brazil. Equirectangular, 400x395 viewBox. */
+/* Approximate [lon,lat] of each region, and a coarse outline of Brazil. Equirectangular, 400x410 viewBox (the map is drawn 395 tall; the rest leaves room for the label under the southernmost camp). */
 const REGION_XY={"Pontal do Paranapanema, SP":[-52,-22.5],"Sul do Pará":[-50.5,-7],"Zona da Mata, PE":[-36,-8],"Oeste do Paraná":[-53.5,-25],
   "Norte de Minas":[-43.8,-16.5],"Sertão da Bahia":[-41.5,-11.5],"Campanha Gaúcha":[-54.5,-30.5],"Bico do Papagaio, TO":[-48,-5.5]};
 const BR=[[-51.6,4.3],[-50,1.8],[-50.5,0.5],[-48.5,-0.5],[-46,-1],[-44.5,-2.5],[-41.8,-2.9],[-39,-3],[-37.2,-4.9],[-35.2,-5.3],[-34.8,-7.1],[-35,-9],
@@ -461,21 +462,35 @@ const rnd=(a,b)=>a+Math.random()*(b-a), ri=(a,b)=>Math.floor(rnd(a,b+1)), pick=a
 
 /* ===== 4. STATE =====
    S is the whole saved game (JSON in localStorage "lonapreta"). Shape: docs/ARCHITECTURE.md.
-   moveSel = index into S.estates of the estate selected on the map (not saved).
-   take = what the player packs when moving (not saved). curModal = function that builds the open modal's HTML. */
-let S, moveSel=null, take=null, marketTab="sell", curModal=null;
+   S.camps[] holds every camp (each is a land object plus its own families, money, stores and court case).
+   S.cur is the camp on screen; K() returns it. A camp is "camp" (still fighting), "won" (a settlement) or "lost" (gone for good).
+   curModal = function that builds the open modal's HTML. pending = modals waiting for their turn (neither is saved). */
+let S, marketTab="sell", curModal=null, pending=[];
+const CAMPS=4;
+const K=()=>S.camps[S.cur];
+const live=k=>k.state==="camp";
+const short=n=>n.replace("Fazenda ","");
 
-/* Two idle estates per region, on opposite sides of the region's centre so their markers don't overlap. */
-function genEstates(){
-  const names=[...NAMES].sort(()=>Math.random()-.5);
-  return REGIONS.flatMap((r,i)=>{const a=rnd(0,Math.PI);
-    return [0,1].map(k=>genLand(r,names[i*2+k],Math.cos(a+k*Math.PI)*1.1,Math.sin(a+k*Math.PI)*1.1))});
-}
 function genLand(region,name,dx,dy){
   const size=pick([9,12,12,16]);
   return {name:"Fazenda "+name,region,lon:REGION_XY[region][0]+dx,lat:REGION_XY[region][1]+dy,size,cols:size===9?3:4,
     fert:+rnd(.7,1.3).toFixed(2),idle:ri(2,20),owner:ri(15,60),growth:ri(1,4),vigil:+rnd(.5,1.5).toFixed(2),
     well:false,plots:Array.from({length:size},()=>({s:Math.random()<.8?"mato":"terra"}))};
+}
+/* A land plus everything that belongs to the camp living on it. Nothing is shared between camps. */
+const makeCamp=l=>Object.assign(l,{state:"camp",families:2,labor:4,money:30,inv:{feijao:12,milho:12,mandioca:8,ovos:0},hens:3,chicks:[],goats:0,tools:0,
+  discovered:false,cas:null,acted:{},sel:null});
+/* n camps in n different regions, spaced out so their map markers do not touch. */
+function genCamps(n,avoidRegions=[],avoidNames=[]){
+  const names=NAMES.filter(x=>!avoidNames.includes("Fazenda "+x)).sort(()=>Math.random()-.5);
+  const pool=REGIONS.filter(r=>!avoidRegions.includes(r));
+  let regions;
+  for(let tries=0;tries<200;tries++){
+    regions=[...pool].sort(()=>Math.random()-.5).slice(0,n);
+    const xy=[...avoidRegions,...regions].map(r=>geo(...REGION_XY[r]));
+    if(xy.every((a,i)=>xy.every((b,j)=>j<=i||Math.hypot(a[0]-b[0],a[1]-b[1])>62)))break;
+  }
+  return regions.map((r,i)=>makeCamp(genLand(r,names[i],rnd(-.4,.4),rnd(-.4,.4))));
 }
 /* Labels derived from land numbers. They return TRANSLATED text, so call them at render time. */
 const ownerKind=l=>tr(l.owner<30?"owner.heirs":l.owner<45?"owner.absentee":"owner.agro");
@@ -484,20 +499,18 @@ const vigilLabel=l=>tr(l.vigil<.8?"vigil.low":l.vigil<1.15?"vigil.mid":"vigil.hi
 const monthOf=t=>tr("month."+((9+t)%12));
 const yearOf=t=>2026+Math.floor((9+t)/12);
 const rainy=()=>RAINY.has((9+S.t)%12);
-const laborMax=()=>S.families*2+S.tools;
-const active=()=>S.land?S.land.plots.filter(p=>p.s==="grow"||p.s==="ready").length:0;
+const laborMax=k=>k.families*2+k.tools;
+const active=k=>k.plots.filter(p=>p.s==="grow"||p.s==="ready").length;
 function newPrices(){const o={};for(const k in CROPS)o[k]=+(CROPS[k].price*rnd(.8,1.2)).toFixed(2);o.ovos=+rnd(.8,1.2).toFixed(2);return o}
 
 function newGame(){
-  S={t:0,families:3,labor:6,money:50,inv:{feijao:20,milho:20,mandioca:12,ovos:0},hens:5,chicks:[],goats:0,tools:0,carts:0,
-    land:null,discovered:false,cas:null,acted:{},sel:null,log:[],history:[],landsCount:0,evictions:0,estates:genEstates(),
-    phase:"choose",prices:newPrices()};
-  moveSel=null; take=null;
-  log("log.begin");
+  S={t:0,phase:"play",cur:0,camps:genCamps(CAMPS),log:[],prices:newPrices()};
+  log("log.begin",{n:CAMPS},null);S.log[0].at=null;
+  curModal=null;pending=[];
 }
-/* The camp log stores a KEY + vars (not text) so entries re-translate when the player switches mode.
-   Old saves may hold {m,when} strings; logText/logWhen fall back to those. */
-function log(k,v){S.log.unshift({k,v,at:(S.land||S.t)?S.t:null});S.log=S.log.slice(0,40)}
+/* The log stores a KEY + vars (not text) so entries re-translate when the player switches mode.
+   c = name of the camp the entry is about (null for news that is about all of them). */
+function log(k,v,c=K()){S.log.unshift({k,v,at:S.t,c:c?c.name:null});S.log=S.log.slice(0,60)}
 const logText=l=>{if(!l.k)return l.m;const v={...l.v};if(v.item)v.item=tr("shop."+v.item);return tr(l.k,v)};
 const logWhen=l=>!l.k?l.when:l.at==null?tr("log.start"):monthOf(l.at)+" "+yearOf(l.at);
 function save(){try{localStorage.setItem("lonapreta",JSON.stringify(S))}catch(e){}}
@@ -533,330 +546,305 @@ function art(p){
 const plotLabel=p=>p.s==="mato"?tr("plot.scrub"):p.s==="terra"?tr("plot.cleared"):p.s==="ready"?tr("plot.harvest"):CROPS[p.crop].name+" "+p.age+"/"+CROPS[p.crop].grow;
 
 /* ===== 6. RENDER (main screen; rebuilds #app from S every time) ===== */
+const whenOf=t=>monthOf(t)+" "+yearOf(t);
+const statusOf=k=>k.state==="won"?tr("tab.won"):k.state==="lost"?tr("tab.lost"):k.cas?tr("tab.hearing",{n:k.cas.months}):tr("tab.quiet");
+/* One button per camp, always visible, so a hearing coming up in another camp is never out of sight. */
+const campTabs=()=>`<nav class="camps" aria-label="${tr("camps.aria")}">${S.camps.map((k,i)=>{
+  const st=statusOf(k), cls=live(k)?(k.cas?"hearing":"quiet"):k.state;
+  return `<button class="btn ${cls}${i===S.cur?" on":""}" data-camp="${i}" aria-pressed="${i===S.cur}" aria-label="${tr("tab.aria",{name:k.name,status:st})}"><span class="n">${short(k.name)}</span><small>${st}</small></button>`}).join("")}</nav>`;
+const banner=k=>k.state==="won"
+  ?`<div class="landc won"><strong>${tr("map.won")}</strong><span class="calm">${tr("camp.wonNote",{name:k.name,fam:k.families,when:whenOf(k.endT)})}</span></div>`
+  :`<div class="landc lost"><strong>${tr("map.lost")}</strong><span class="calm">${tr(k.why==="hunger"?"camp.lostHunger":"camp.lostEvicted",{name:k.name,when:whenOf(k.endT)})}</span></div>`;
+
 function render(){
-  const L=S.land, app=document.getElementById("app");
+  const k=K(), app=document.getElementById("app");
   const title=`<h1>Lona <span>Preta</span></h1>`;
-  if(!L){app.innerHTML=`<header class="top"><div>${title}</div><div class="status">${themeBtn()}</div></header>`;return}
-  const p=S.sel!=null?L.plots[S.sel]:null;
+  const p=k.sel!=null?k.plots[k.sel]:null;
   let acts="";
   if(!p) acts=`<span class="calm">${tr("act.tap")}</span>`;
-  else if(p.s==="mato") acts=`<button class="btn" data-a="clear" ${S.labor<1?"disabled":""}>${tr("act.clear")}<small>${tr("act.laborCost")}</small></button>`;
-  else if(p.s==="terra") acts=Object.keys(CROPS).map(k=>`<button class="btn" data-a="plant" data-c="${k}" ${S.labor<1||S.inv[k]<SEED_COST?"disabled":""}>${tr("act.plant",{crop:CROPS[k].name})}<small>${tr("act.plantCost",{grow:CROPS[k].grow,seed:SEED_COST})}</small></button>`).join("");
-  else if(p.s==="ready") acts=`<button class="btn corn" data-a="harvest" ${S.labor<1?"disabled":""}>${tr("act.harvest",{crop:CROPS[p.crop].name})}<small>${tr("act.laborCost")}</small></button>`;
+  else if(p.s==="mato") acts=`<button class="btn" data-a="clear" ${k.labor<1?"disabled":""}>${tr("act.clear")}<small>${tr("act.laborCost")}</small></button>`;
+  else if(p.s==="terra") acts=Object.keys(CROPS).map(c=>`<button class="btn" data-a="plant" data-c="${c}" ${k.labor<1||k.inv[c]<SEED_COST?"disabled":""}>${tr("act.plant",{crop:CROPS[c].name})}<small>${tr("act.plantCost",{grow:CROPS[c].grow,seed:SEED_COST})}</small></button>`).join("");
+  else if(p.s==="ready") acts=`<button class="btn corn" data-a="harvest" ${k.labor<1?"disabled":""}>${tr("act.harvest",{crop:CROPS[p.crop].name})}<small>${tr("act.laborCost")}</small></button>`;
   else acts=`<span class="calm">${tr("act.growing",{crop:CROPS[p.crop].name,n:CROPS[p.crop].grow-p.age})}${p.f<1?tr("act.dryHalf"):""}</span>`;
 
-  const C=S.cas;
-  const caseHtml=C?`<div class="panel case"><div class="landhead"><h3>${tr("case.title")}</h3><span class="label">${tr("case.hearing",{n:C.months})}</span></div>
+  const C=k.cas;
+  const caseHtml=!live(k)?"":C?`<div class="panel case"><div class="landhead"><h3>${tr("case.title")}</h3><span class="label">${tr("case.hearing",{n:C.months})}</span></div>
     <div class="meter"><span>${tr("case.defense")}</span><div class="track"><i style="width:${Math.min(100,C.defense/Math.max(C.defense,C.owner,1)*100)}%;background:var(--leaf)"></i></div><b>${Math.round(C.defense)}</b></div>
     <div class="meter"><span>${tr("case.owner")}</span><div class="track"><i style="width:${Math.min(100,C.owner/Math.max(C.defense,C.owner,1)*100)}%;background:var(--clay)"></i></div><b>${Math.round(C.owner)}</b></div>
-    <span class="calm">${tr("case.note",{n:defenseTick()})}</span>
+    <span class="calm">${tr("case.note",{n:defenseTick(k)})}</span>
     <div class="actions">
-      <button class="btn" data-a="lawyer" ${S.acted.lawyer||S.money<30?"disabled":""}>${tr("case.lawyer")}<small>${tr("case.lawyerCost")}</small></button>
-      <button class="btn" data-a="laudo" ${C.laudo||S.money<60?"disabled":""}>${tr("case.laudo")}<small>${tr("case.laudoCost",{n:L.idle*2})}</small></button>
-      <button class="btn" data-a="mob" ${S.acted.mob||S.labor<3?"disabled":""}>${tr("case.mob")}<small>${tr("case.mobCost")}</small></button>
+      <button class="btn" data-a="lawyer" ${k.acted.lawyer||k.money<30?"disabled":""}>${tr("case.lawyer")}<small>${tr("case.lawyerCost")}</small></button>
+      <button class="btn" data-a="laudo" ${C.laudo||k.money<60?"disabled":""}>${tr("case.laudo")}<small>${tr("case.laudoCost",{n:k.idle*2})}</small></button>
+      <button class="btn" data-a="mob" ${k.acted.mob||k.labor<3?"disabled":""}>${tr("case.mob")}<small>${tr("case.mobCost")}</small></button>
     </div></div>`
-    :`<div class="panel case"><div class="landhead"><h3 style="color:var(--leaf)">${tr("case.quiet")}</h3><span class="label">${S.discovered?"":tr("case.undiscovered")}</span></div>
-      <span class="calm">${tr("case.quietNote",{vigil:vigilLabel(L)})}</span></div>`;
+    :`<div class="panel case"><div class="landhead"><h3 style="color:var(--leaf)">${tr("case.quiet")}</h3><span class="label">${k.discovered?"":tr("case.undiscovered")}</span></div>
+      <span class="calm">${tr("case.quietNote",{vigil:vigilLabel(k)})}</span></div>`;
 
-  const sel=moveSel!=null?S.estates[moveSel]:null;
-  const moveBlock=S.phase==="won"?"":sel
-    ?`${estateCard(sel)}<div class="bar"><button class="btn go" data-a="move" ${S.money<moveCost(sel)?"disabled":""}>${tr("map.moveHere")}<small>R$${moveCost(sel)}</small></button></div>`
-    :`<span class="calm">${tr("map.hint")}</span>`;
+  const grid=live(k)
+    ?`<div class="grid" style="grid-template-columns:repeat(${k.cols},minmax(0,1fr))">${k.plots.map((q,i)=>`<button class="plot ${k.sel===i?"sel":""} ${q.s}" data-p="${i}" aria-label="${tr("plot.aria",{i:i+1,label:plotLabel(q)})}">${art(q)}<span class="badge">${plotLabel(q)}</span></button>`).join("")}</div>`
+    :k.state==="won"
+    ?`<div class="grid" style="grid-template-columns:repeat(${k.cols},minmax(0,1fr))">${k.plots.map((q,i)=>`<div class="plot ${q.s}" role="img" aria-label="${tr("plot.aria",{i:i+1,label:plotLabel(q)})}">${art(q)}<span class="badge">${plotLabel(q)}</span></div>`).join("")}</div>`
+    :"";
+  const settled=S.camps.filter(c=>c.state==="won").length;
 
   app.innerHTML=`
   <header class="top">
     <div>${title}<div class="tag">${tr("app.tagline")}</div></div>
     <div class="status">
       <span class="chip ${rainy()?"rain":"dry"}">${monthOf(S.t)} ${yearOf(S.t)} <b>${rainy()?tr("stat.rain"):tr("stat.dry")}</b></span>
-      <span class="chip">${tr("stat.families")} <b>${S.families}</b></span>
-      <span class="chip">${tr("stat.labor")} <b>${S.labor}/${laborMax()}</b></span>
-      <span class="chip">R$ <b>${S.money.toFixed(0)}</b></span>
+      <span class="chip">${tr("stat.settled")} <b>${settled}/${S.camps.length}</b></span>
+      <span class="chip">${tr("stat.families")} <b>${k.families}</b></span>
+      ${live(k)?`<span class="chip">${tr("stat.labor")} <b>${k.labor}/${laborMax(k)}</b></span>`:""}
+      <span class="chip">R$ <b>${k.money.toFixed(0)}</b></span>
       ${themeBtn()}
     </div>
   </header>
+  ${campTabs()}
   <div class="cols">
     <div class="panel">
-      <div class="landhead"><h2>${L.name}</h2><span class="label">${L.region}</span></div>
-      <div class="facts"><span>${tr("land.yrsUnused",{n:L.idle})}</span><span><b>${fertLabel(L)}</b></span><span>${tr("land.owner",{kind:ownerKind(L)})}</span>${L.well?`<span><b>${tr("land.well")}</b></span>`:""}</div>
-      <div class="grid" style="grid-template-columns:repeat(${L.cols},minmax(0,1fr))">
-        ${L.plots.map((q,i)=>`<button class="plot ${S.sel===i?"sel":""} ${q.s}" data-p="${i}" aria-label="${tr("plot.aria",{i:i+1,label:plotLabel(q)})}">${art(q)}<span class="badge">${plotLabel(q)}</span></button>`).join("")}
-      </div>
-      <div class="actions">${acts}</div>
+      <div class="landhead"><h2>${k.name}</h2><span class="label">${k.region}</span></div>
+      <div class="facts"><span>${tr("land.yrsUnused",{n:k.idle})}</span><span><b>${fertLabel(k)}</b></span><span>${tr("land.owner",{kind:ownerKind(k)})}</span>${k.well?`<span><b>${tr("land.well")}</b></span>`:""}</div>
+      ${live(k)?"":banner(k)}
+      ${grid}
+      ${live(k)?`<div class="actions">${acts}</div>`:""}
       <div class="bar">
-        <button class="btn" data-a="market">${tr("act.market")}</button>
-        <button class="btn" data-a="move">${tr("act.move")}</button>
+        ${live(k)?`<button class="btn" data-a="market">${tr("act.market")}</button>`:""}
         <button class="btn go" data-a="next">${tr("act.next")}</button>
       </div>
     </div>
     <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
       ${caseHtml}
-      <div class="panel"><div class="landhead"><span class="label">${tr("map.title")}</span><span class="label">${S.phase==="won"?tr("map.won"):tr("map.inProd",{a:active(),b:L.size})}</span></div>${mapHtml()}
-        ${moveBlock}</div>
-      <div class="panel"><span class="label">${tr("store.title")}</span>
+      <div class="panel"><div class="landhead"><span class="label">${tr("map.title")}</span><span class="label">${live(k)?tr("map.inProd",{a:active(k),b:k.size}):k.state==="won"?tr("map.won"):tr("map.lost")}</span></div>${mapHtml()}
+        <span class="calm">${tr("map.hint")}</span></div>
+      ${k.state==="lost"?"":`<div class="panel"><span class="label">${tr("store.title")}</span>
         <div class="inv">
-          ${Object.keys(CROPS).map(k=>`<div><b>${S.inv[k]}</b>${CROPS[k].name}<span>${tr("crop."+k+".gloss")}</span></div>`).join("")}
-          <div><b>${S.inv.ovos}</b>${tr("store.eggs")}</div>
-          <div><b>${S.hens}</b>${tr("store.hens")}${S.chicks.length?tr("store.chicks",{n:S.chicks.length}):""}</div>
-          ${S.goats?`<div><b>${S.goats}</b>${tr("store.goats")}</div>`:""}
-          ${S.tools?`<div><b>${S.tools}</b>${tr("store.hoes")}</div>`:""}
-          ${S.carts?`<div><b>${S.carts}</b>${tr("store.carts")}</div>`:""}
+          ${Object.keys(CROPS).map(c=>`<div><b>${k.inv[c]}</b>${CROPS[c].name}<span>${tr("crop."+c+".gloss")}</span></div>`).join("")}
+          <div><b>${k.inv.ovos}</b>${tr("store.eggs")}</div>
+          <div><b>${k.hens}</b>${tr("store.hens")}${k.chicks.length?tr("store.chicks",{n:k.chicks.length}):""}</div>
+          ${k.goats?`<div><b>${k.goats}</b>${tr("store.goats")}</div>`:""}
+          ${k.tools?`<div><b>${k.tools}</b>${tr("store.hoes")}</div>`:""}
         </div>
-        <span class="calm">${tr("store.eat",{n:S.families*2})}</span>
-      </div>
+        <span class="calm">${tr("store.eat",{n:k.families*2})}</span>
+      </div>`}
       <div class="panel"><span class="label">${tr("log.title")}</span>
-        <ul class="log">${S.log.slice(0,14).map(l=>`<li><span class="m">${logWhen(l)}</span>${logText(l)}</li>`).join("")}</ul>
+        <ul class="log">${S.log.slice(0,16).map(l=>`<li><span class="m">${logWhen(l)}</span>${l.c?`<b>${short(l.c)}</b> `:""}${logText(l)}</li>`).join("")}</ul>
       </div>
       <details class="panel"><summary>${tr("howto.title")}</summary>
-        <ul>${[1,2,3,4,5,6].map(i=>`<li>${tr("howto."+i)}</li>`).join("")}</ul>
+        <ul>${[1,2,3,4,5,6,7].map(i=>`<li>${tr("howto."+i)}</li>`).join("")}</ul>
       </details>
     </div>
   </div>`;
 }
 
 /* ===== 7. MAP =====
-   One SVG of Brazil. Draw order: evicted crosses, route line, idle estates (selected one last), your camp. */
+   One SVG of Brazil with every camp on it. Tap a marker to go to that camp.
+   Draw order: the camp on screen is drawn last. A ring shows plots in production, yellow = settlement, ✕ = lost. */
 const ll=l=>{const r=REGION_XY[l.region]||[-52,-15];return [l.lon??r[0],l.lat??r[1]]};
 const pos=l=>geo(...ll(l));
-/* Moving costs trucks and fuel: R$10 base + R$0.03 per km. Road distance is ~1.3x the straight line. */
-function kmTo(l){
-  const [a,b]=[ll(S.land),ll(l)].map(([lo,la])=>[lo*Math.PI/180,la*Math.PI/180]);
-  const h=Math.sin((b[1]-a[1])/2)**2+Math.cos(a[1])*Math.cos(b[1])*Math.sin((b[0]-a[0])/2)**2;
-  return Math.round(2*6371*Math.asin(Math.sqrt(h))*1.3/10)*10;
-}
-const moveCost=l=>S.land?Math.round(10+kmTo(l)*.03):0;
 const CIRC=2*Math.PI*7;
-const estateTip=l=>S.land?tr("map.tipCost",{name:l.name,idle:l.idle,size:l.size,km:kmTo(l),c:moveCost(l)}):tr("map.tip",{name:l.name,idle:l.idle,size:l.size});
+const campTip=k=>k.state==="won"?tr("map.tipWon",{name:k.name}):k.state==="lost"?tr("map.tipLost",{name:k.name}):tr("map.tipCamp",{name:k.name,a:active(k),b:k.size});
 function mapHtml(){
   let m="";
-  for(const h of S.history){if(!h.evicted)continue;const [x,y]=pos(h);
-    m+=`<path d="M${x-3} ${y-3}L${x+3} ${y+3}M${x+3} ${y-3}L${x-3} ${y+3}" stroke="var(--clay)" stroke-width="2" stroke-linecap="round"><title>${tr("map.tipEvicted",{name:h.name})}</title></path>`}
-  const sel=moveSel!=null?S.estates[moveSel]:null;
-  if(S.land&&sel){const [x1,y1]=pos(S.land),[x2,y2]=pos(sel);m+=`<line class="route" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`}
-  [...S.estates.keys()].sort((a,b)=>(a===moveSel)-(b===moveSel)).forEach(i=>{
-    const l=S.estates[i],[x,y]=pos(l),r=5+l.size/5,on=moveSel===i,c=moveCost(l),tip=estateTip(l);
-    m+=`<g data-land="${i}" class="cand${on?" on":""}" tabindex="0" role="button" aria-label="${tip}"><title>${tip}</title>
-      <circle cx="${x}" cy="${y}" r="${r}" fill="var(--clay)" fill-opacity="${S.land&&S.money<c&&S.phase!=="evict"?.3:.85}" stroke="${on?"var(--accent)":"var(--chalk)"}" stroke-width="${on?3:1}"/>
-      ${on?`<text class="c" x="${x}" y="${y+r+11}" text-anchor="middle">${l.name.replace("Fazenda ","")}${S.land?` · R$${c}`:""}</text>`:""}</g>`});
-  if(S.land){
-    const L=S.land,[x,y]=pos(L),won=S.phase==="won",frac=won?1:active()/L.size;
-    m+=`<g><title>${tr("map.tipCamp",{name:L.name,a:active(),b:L.size})}</title>
-      <circle cx="${x}" cy="${y}" r="14" fill="var(--clay)"/>
-      <circle cx="${x}" cy="${y}" r="7" fill="none" stroke="var(--leaf)" stroke-width="14" stroke-dasharray="${(frac*CIRC).toFixed(2)} ${CIRC.toFixed(2)}" transform="rotate(-90 ${x} ${y})"/>
-      <circle cx="${x}" cy="${y}" r="14" fill="none" stroke="${won?"var(--corn)":"var(--chalk)"}" stroke-width="${won?3:1.5}"/>
-      <text x="${x}" y="${y-19}" text-anchor="middle">${won?tr("map.settlement"):tr("map.you")}</text></g>`;
-  }
-  return `<svg class="map" viewBox="0 0 400 395" role="img" aria-label="${tr("map.aria")}"><path d="${BR_PATH}" class="br"/>${m}</svg>
-    <div class="legend"><span><i style="background:var(--clay)"></i>${tr("map.legendIdle")}</span>${S.land&&S.phase!=="evict"?`<span><i style="background:var(--clay);opacity:.3"></i>${tr("map.legendCostly")}</span>`:""}<span><i style="background:var(--leaf)"></i>${tr("map.legendProd")}</span><span><b style="color:var(--clay)">✕</b> ${tr("map.legendEvicted")}</span></div>`;
+  [...S.camps.keys()].sort((a,b)=>(a===S.cur)-(b===S.cur)).forEach(i=>{
+    const k=S.camps[i],[x,y]=pos(k),on=i===S.cur,tip=campTip(k);
+    const edge=x>330?"end":x<70?"start":"middle", tx=edge==="end"?x+14:edge==="start"?x-14:x, ty=y+31;
+    let mark;
+    if(k.state==="lost") mark=`<circle cx="${x}" cy="${y}" r="14" fill="var(--tarp-3)" stroke="var(--clay)" stroke-width="1.5"/>
+      <path d="M${x-6} ${y-6}L${x+6} ${y+6}M${x+6} ${y-6}L${x-6} ${y+6}" stroke="var(--clay)" stroke-width="3" stroke-linecap="round"/>`;
+    else{
+      const won=k.state==="won", frac=won?1:active(k)/k.size;
+      mark=`<circle cx="${x}" cy="${y}" r="14" fill="var(--clay)"/>
+        <circle cx="${x}" cy="${y}" r="7" fill="none" stroke="var(--leaf)" stroke-width="14" stroke-dasharray="${(frac*CIRC).toFixed(2)} ${CIRC.toFixed(2)}" transform="rotate(-90 ${x} ${y})"/>
+        <circle cx="${x}" cy="${y}" r="14" fill="none" stroke="${won?"var(--corn)":"var(--chalk)"}" stroke-width="${won?3:1.5}"/>`;
+    }
+    m+=`<g data-camp="${i}" class="cand${on?" on":""}" tabindex="0" role="button" aria-label="${tip}"><title>${tip}</title>
+      ${on?`<circle cx="${x}" cy="${y}" r="19" fill="none" stroke="var(--accent)" stroke-width="2"/>`:""}${mark}
+      <text class="${on?"c":""}" x="${tx}" y="${ty}" text-anchor="${edge}">${short(k.name)}</text></g>`});
+  return `<svg class="map" viewBox="0 0 400 410" role="img" aria-label="${tr("map.aria")}"><path d="${BR_PATH}" class="br"/>${m}</svg>
+    <div class="legend"><span><i style="background:var(--clay)"></i>${tr("map.legendCamp")}</span><span><i style="background:var(--leaf)"></i>${tr("map.legendProd")}</span><span><i style="background:var(--corn)"></i>${tr("map.legendWon")}</span><span><b style="color:var(--clay)">✕</b> ${tr("map.legendLost")}</span></div>`;
 }
-/* Details (and move cost) of an estate selected on the map. */
-const estateCard=l=>`<div class="landc on"><strong>${l.name}</strong>
-  <span class="calm">${S.land?tr("estate.far",{region:l.region,km:kmTo(l)}):l.region}</span>
-  <span class="facts"><span>${tr("land.yrsUnused",{n:l.idle})}</span><span><b>${fertLabel(l)}</b></span><span>${tr("land.plots",{n:l.size})}</span><span>${ownerKind(l)}</span><span>${vigilLabel(l)}</span></span>
-  ${S.land?`<span class="cost">${tr("estate.cost",{c:moveCost(l)})}</span>`:""}</div>`;
-const defenseTick=()=>Math.round(active()*.6+S.families*.5);
+const defenseTick=k=>Math.round(active(k)*.6+k.families*.5);
 
 /* ===== 8. ACTIONS (clicks and keys) ===== */
 document.addEventListener("click",e=>{
   if(e.target.closest("[data-theme-toggle]")){toggleTheme();return}
-  const lb=e.target.closest("[data-land]"); if(lb&&!lb.closest("#ov")){moveSel=moveSel===+lb.dataset.land?null:+lb.dataset.land;render();return}
-  const pb=e.target.closest("[data-p]"); if(pb){S.sel=+pb.dataset.p;render();return}
+  const cb=e.target.closest("[data-camp]"); if(cb){S.cur=+cb.dataset.camp;save();render();return}
+  const pb=e.target.closest("[data-p]"); if(pb){K().sel=+pb.dataset.p;render();return}
   const b=e.target.closest("[data-a]"); if(!b||b.disabled)return;
-  const a=b.dataset.a, L=S.land, p=S.sel!=null&&L?L.plots[S.sel]:null;
+  const a=b.dataset.a, k=K(), p=k.sel!=null?k.plots[k.sel]:null;
   switch(a){
-    case "clear": p.s="terra";S.labor--;break;
-    case "plant":{const c=b.dataset.c;S.inv[c]-=SEED_COST;S.labor--;Object.assign(p,{s:"grow",crop:c,age:0,f:(rainy()||L.well)?1:.5});break}
-    case "harvest":{const n=Math.round(CROPS[p.crop].yield*L.fert*p.f);S.inv[p.crop]+=n;log("log.harvest",{n,crop:CROPS[p.crop].name});p.s="terra";delete p.crop;S.labor--;break}
-    case "lawyer": S.money-=30;S.cas.defense+=6;S.acted.lawyer=1;log("log.lawyer");break;
-    case "laudo": S.money-=60;S.cas.defense+=L.idle*2;S.cas.laudo=1;log("log.laudo",{n:L.idle});break;
-    case "mob": S.labor-=3;S.cas.defense+=5;S.acted.mob=1;log("log.mob");break;
+    case "clear": p.s="terra";k.labor--;break;
+    case "plant":{const c=b.dataset.c;k.inv[c]-=SEED_COST;k.labor--;Object.assign(p,{s:"grow",crop:c,age:0,f:(rainy()||k.well)?1:.5});break}
+    case "harvest":{const n=Math.round(CROPS[p.crop].yield*k.fert*p.f);k.inv[p.crop]+=n;log("log.harvest",{n,crop:CROPS[p.crop].name});p.s="terra";delete p.crop;k.labor--;break}
+    case "lawyer": k.money-=30;k.cas.defense+=6;k.acted.lawyer=1;log("log.lawyer");break;
+    case "laudo": k.money-=60;k.cas.defense+=k.idle*2;k.cas.laudo=1;log("log.laudo",{n:k.idle});break;
+    case "mob": k.labor-=3;k.cas.defense+=5;k.acted.mob=1;log("log.mob");break;
     case "market": marketTab="sell";openMarket();return;
-    case "move": take=null;openMove(false);return;
-    case "next": endMonth();break;
+    case "next": endMonth();save();render();pump();return;
   }
   save();render();
 });
 document.addEventListener("keydown",e=>{ // make SVG map markers keyboard-operable
-  if((e.key==="Enter"||e.key===" ")&&e.target.matches?.("[data-land]")){e.preventDefault();e.target.dispatchEvent(new MouseEvent("click",{bubbles:true}))}
+  if((e.key==="Enter"||e.key===" ")&&e.target.matches?.("[data-camp]")){e.preventDefault();e.target.dispatchEvent(new MouseEvent("click",{bubbles:true}))}
 });
 
-/* ===== 9. MONTH LOOP (food, chickens, events, court case) =====
-   endMonth(travel): travel=true when called from doMove (no farming/legal/event that month). */
-function eat(milk){
-  let need=S.families*2;
+/* ===== 9. MONTH LOOP (food, chickens, events, court cases) =====
+   endMonth() moves EVERY camp that is still fighting forward one month. Camps that are won or lost are frozen. */
+function eat(k,milk){
+  let need=k.families*2;
   const use=n=>{const u=Math.min(n,need);need-=u;return u};
   use(milk);
-  for(const k of ["ovos","mandioca","milho","feijao"]) S.inv[k]-=use(S.inv[k]);
-  if(need>0){S.families--;log("log.hunger");}
+  for(const c of ["ovos","mandioca","milho","feijao"]) k.inv[c]-=use(k.inv[c]);
+  if(need>0){k.families--;log("log.hunger",null,k);}
 }
-function chickens(){
-  if(S.hens>0){
-    const corn=Math.ceil(S.hens/3), fed=S.inv.milho>=corn;
-    if(fed)S.inv.milho-=corn;
-    S.inv.ovos+=S.hens*(fed?3:1);
+function chickens(k){
+  if(k.hens>0){
+    const corn=Math.ceil(k.hens/3), fed=k.inv.milho>=corn;
+    if(fed)k.inv.milho-=corn;
+    k.inv.ovos+=k.hens*(fed?3:1);
   }
-  S.chicks=S.chicks.map(a=>a+1);
-  const grown=S.chicks.filter(a=>a>=2).length; S.chicks=S.chicks.filter(a=>a<2); S.hens+=grown;
-  if(S.hens>=2){const n=ri(0,Math.ceil(S.hens/4));for(let i=0;i<n;i++){S.chicks.push(0);S.inv.ovos=Math.max(0,S.inv.ovos-1)}}
+  k.chicks=k.chicks.map(a=>a+1);
+  const grown=k.chicks.filter(a=>a>=2).length; k.chicks=k.chicks.filter(a=>a<2); k.hens+=grown;
+  if(k.hens>=2){const n=ri(0,Math.ceil(k.hens/4));for(let i=0;i<n;i++){k.chicks.push(0);k.inv.ovos=Math.max(0,k.inv.ovos-1)}}
 }
-/* Each event changes the state and returns [logKey, vars] (or nothing when it does not apply). */
+/* Each event changes one camp and returns [logKey, vars] (or nothing when it does not apply). */
 const EVENTS=[
-  ()=>{if(!S.hens)return;const n=ri(1,Math.ceil(S.hens/3));S.hens-=n;return ["ev.fox",{n}]},
-  ()=>{if(!active())return;S.land.plots.forEach(p=>{if(p.s==="grow")p.age=Math.min(p.age+1,CROPS[p.crop].grow-1)});return ["ev.rain"]},
-  ()=>{if(!active())return;S.land.plots.forEach(p=>{if(p.s==="grow")p.f*=.8});return ["ev.drySpell"]},
-  ()=>{const n=ri(20,60);S.money+=n;return ["ev.union",{n}]},
-  ()=>{for(const k in S.prices)S.prices[k]=+(S.prices[k]*1.5).toFixed(2);return ["ev.fair"]},
-  ()=>{if(S.cas){S.cas.defense+=6;return ["ev.press"]}},
-  ()=>{S.inv.feijao+=5;S.inv.milho+=5;return ["ev.seeds"]},
-  ()=>{if(S.families>=8)return;S.families++;return ["ev.family"]},
-  ()=>{S.land.fert=+(S.land.fert+.05).toFixed(2);return ["ev.soil"]}
+  k=>{if(!k.hens)return;const n=ri(1,Math.ceil(k.hens/3));k.hens-=n;return ["ev.fox",{n}]},
+  k=>{if(!active(k))return;k.plots.forEach(p=>{if(p.s==="grow")p.age=Math.min(p.age+1,CROPS[p.crop].grow-1)});return ["ev.rain"]},
+  k=>{if(!active(k))return;k.plots.forEach(p=>{if(p.s==="grow")p.f*=.8});return ["ev.drySpell"]},
+  k=>{const n=ri(20,60);k.money+=n;return ["ev.union",{n}]},
+  k=>{if(k.cas){k.cas.defense+=6;return ["ev.press"]}},
+  k=>{k.inv.feijao+=5;k.inv.milho+=5;return ["ev.seeds"]},
+  k=>{if(k.families>=8)return;k.families++;return ["ev.family"]},
+  k=>{k.fert=+(k.fert+.05).toFixed(2);return ["ev.soil"]}
 ];
-function endMonth(travel){
-  if(!travel) S.land.plots.forEach(p=>{if(p.s==="grow"){p.age++;if(p.age>=CROPS[p.crop].grow)p.s="ready"}});
-  chickens();
-  eat(S.goats*3);
-  if(S.families<=0){S.phase="lost";S.t++;save();render();openEnd();return}
-  const food=S.inv.ovos+S.inv.mandioca+S.inv.milho+S.inv.feijao;
-  if(!travel&&food>=S.families*10&&S.families<8&&Math.random()<.3){S.families++;log("log.eatsWell")}
-  if(!travel) legal();
-  if(S.phase!=="play"){S.t++;S.labor=laborMax();save();render();return}
-  if(!travel&&Math.random()<.3){const ev=pick(EVENTS)();if(ev)log(...ev)}
-  S.t++; S.acted={}; S.labor=laborMax(); S.prices=newPrices();
+function tickCamp(k){
+  k.plots.forEach(p=>{if(p.s==="grow"){p.age++;if(p.age>=CROPS[p.crop].grow)p.s="ready"}});
+  chickens(k);
+  eat(k,k.goats*3);
+  if(k.families<=0){lose(k,"hunger");return}
+  const food=k.inv.ovos+k.inv.mandioca+k.inv.milho+k.inv.feijao;
+  if(food>=k.families*10&&k.families<8&&Math.random()<.3){k.families++;log("log.eatsWell",null,k)}
+  legal(k);
+  if(!live(k))return;
+  if(Math.random()<.3){const ev=pick(EVENTS)(k);if(ev)log(ev[0],ev[1],k)}
 }
-function legal(){
-  const L=S.land;
-  if(!S.discovered){
-    const pr=.03+.015*active()*L.vigil+(S.hens>12?.02:0);
+function endMonth(){
+  if(S.phase!=="play")return;
+  S.prices=newPrices();
+  if(Math.random()<.08){for(const c in S.prices)S.prices[c]=+(S.prices[c]*1.5).toFixed(2);log("ev.fair",null,null)} // one fair for everybody
+  S.camps.filter(live).forEach(tickCamp);
+  S.t++;
+  S.camps.filter(live).forEach(k=>{k.acted={};k.labor=laborMax(k)});
+  if(!S.camps.some(live)){S.phase="over";notice(endModal)}
+}
+function legal(k){
+  if(!k.discovered){
+    const pr=.03+.015*active(k)*k.vigil+(k.hens>12?.02:0);
     if(Math.random()<pr){
-      S.discovered=true;
-      S.cas={owner:L.owner+ri(0,8),defense:Math.round(L.idle*1.5),months:6,laudo:0};
-      log("log.discovered");
-      showInfo("info.ownerTitle","info.ownerBody",()=>({kind:ownerKind(L)}));
+      k.discovered=true;
+      k.cas={owner:k.owner+ri(0,8),defense:Math.round(k.idle*1.5),months:6,laudo:0};
+      log("log.discovered",null,k);
+      notice(info("info.ownerTitle","info.ownerBody",()=>({name:k.name,kind:ownerKind(k)})));
     }
     return;
   }
-  const C=S.cas;
-  C.defense+=defenseTick(); C.owner+=L.growth; C.months--;
+  const C=k.cas;
+  C.defense+=defenseTick(k); C.owner+=k.growth; C.months--;
   if(C.months<=0){
-    if(C.defense>=C.owner){S.phase="won";log("log.won",{name:L.name});openEnd()}
-    else{S.phase="evict";S.evictions++;log("log.evicted",{name:L.name});moveSel=null;take=null;openMove(true)}
+    if(C.defense>=C.owner){
+      k.state="won";k.endT=S.t+1;k.cas=null;
+      log("log.won",{name:k.name},k);
+      notice(info("info.wonTitle","info.wonBody",()=>({name:k.name,fam:k.families})));
+    }else lose(k,"evicted");
   }
+}
+/* A camp that is lost stays lost: the families are gone and the land goes back to its owner. */
+function lose(k,why){
+  k.state="lost";k.why=why;k.endT=S.t+1;k.cas=null;
+  log(why==="hunger"?"log.disbanded":"log.evicted",{name:k.name},k);
+  notice(why==="hunger"?info("info.hungerTitle","info.hungerBody",()=>({name:k.name})):info("info.evictTitle","info.evictBody",()=>({name:k.name})));
 }
 
 /* ===== 10. MODALS =====
    show(fn) takes a FUNCTION that returns the modal HTML, so toggleTheme() can rebuild it in the other language.
-   Read state inside fn (not before it), otherwise a re-render would show stale numbers. */
+   Read state inside fn (not before it), otherwise a re-render would show stale numbers.
+   Several camps can have news in one month: notice(fn) queues a modal and pump() shows the next one when the last is closed. */
 const ov=document.getElementById("ov"), md=document.getElementById("modal");
 function show(fn){curModal=fn;md.innerHTML=fn();ov.hidden=false}
-function hide(){curModal=null;ov.hidden=true;render()}
-function showInfo(titleKey,bodyKey,varsFn){setTimeout(()=>show(()=>`${themeBtn()}<h2>${tr(titleKey)}</h2><p>${tr(bodyKey,varsFn?varsFn():{})}</p><div class="bar"><button class="btn go" id="okb">${tr("info.ok")}</button></div>`),0)}
+function hide(){curModal=null;ov.hidden=true;render();pump()}
+const notice=fn=>pending.push(fn);
+function pump(){if(ov.hidden&&pending.length)show(pending.shift())}
+const info=(titleKey,bodyKey,varsFn)=>()=>{const v=varsFn();
+  return `${themeBtn()}<h2>${tr(titleKey,v)}</h2><p>${tr(bodyKey,v)}</p><div class="bar"><button class="btn go" id="okb">${tr("info.ok")}</button></div>`};
 md.addEventListener("click",e=>{
-  const b=e.target.closest("button,[data-land]"); if(!b||b.disabled)return;
+  const b=e.target.closest("button"); if(!b||b.disabled)return;
   if(b.id==="okb"){hide();return}
   const d=b.dataset;
   if(d.close){hide();return}
   if(d.tab){marketTab=d.tab;openMarket();return}
-  if(d.sell){const k=d.sell,n=Math.min(+d.n,S.inv[k]);S.inv[k]-=n;S.money+=n*S.prices[k];save();openMarket();return}
+  if(d.sell){const k=K(),c=d.sell,n=Math.min(+d.n,k.inv[c]);k.inv[c]-=n;k.money+=n*S.prices[c];save();openMarket();return}
   if(d.buy){buy(d.buy);save();openMarket();return}
-  if(d.land!=null){moveSel=+d.land;if(S.phase!=="choose"&&!take)take=defaultTake();(S.phase==="choose"?openChoose:()=>openMove(S.phase==="evict"))();return}
-  if(d.tk){const [k,dl]=[d.tk,+d.dl];take[k]=Math.max(0,Math.min(have(k),take[k]+dl));openMove(S.phase==="evict");return}
-  if(d.settle){settle();return}
-  if(d.go){doMove();return}
-  if(d.restart){newGame();render();openChoose();return}
+  if(d.restart){newGame();save();hide();return}
 });
-ov.addEventListener("click",e=>{if(e.target===ov&&S.phase==="play")hide()});
+ov.addEventListener("click",e=>{if(e.target===ov&&curModal!==endModal)hide()});
 
-/* Shop: label = tr("shop."+k), optional note = tr("shop."+k+".note"). */
+/* Shop: label = tr("shop."+k), optional note = tr("shop."+k+".note"). Every item is bought by, and for, the camp on screen. */
 const SHOP=[
-  {k:"feijao",cost:()=>Math.ceil(S.prices.feijao*1.5*5),do:()=>S.inv.feijao+=5},
-  {k:"milho",cost:()=>Math.ceil(S.prices.milho*1.5*5),do:()=>S.inv.milho+=5},
-  {k:"mandioca",cost:()=>Math.ceil(S.prices.mandioca*1.5*5),do:()=>S.inv.mandioca+=5},
-  {k:"hen",cost:()=>15,do:()=>S.hens++},
-  {k:"goat",cost:()=>60,do:()=>S.goats++},
-  {k:"hoe",cost:()=>30,do:()=>S.tools++},
-  {k:"cart",cost:()=>120,do:()=>S.carts++},
-  {k:"well",cost:()=>80,do:()=>S.land.well=true,once:()=>S.land.well}
+  {k:"feijao",cost:()=>Math.ceil(S.prices.feijao*1.5*5),do:k=>k.inv.feijao+=5},
+  {k:"milho",cost:()=>Math.ceil(S.prices.milho*1.5*5),do:k=>k.inv.milho+=5},
+  {k:"mandioca",cost:()=>Math.ceil(S.prices.mandioca*1.5*5),do:k=>k.inv.mandioca+=5},
+  {k:"hen",cost:()=>15,do:k=>k.hens++},
+  {k:"goat",cost:()=>60,do:k=>k.goats++},
+  {k:"hoe",cost:()=>30,do:k=>k.tools++},
+  {k:"well",cost:()=>80,do:k=>k.well=true,once:k=>k.well}
 ];
-function buy(k){const it=SHOP.find(x=>x.k===k);const c=it.cost();if(S.money>=c){S.money-=c;it.do();log("log.bought",{item:k})}}
+function buy(id){const k=K(),it=SHOP.find(x=>x.k===id),c=it.cost();if(k.money>=c){k.money-=c;it.do(k);log("log.bought",{item:id})}}
 function openMarket(){show(()=>{
-  const sell=["feijao","milho","mandioca","ovos"].map(k=>{const nm=k==="ovos"?tr("store.eggs"):CROPS[k].name;
-    return `<div class="row"><span>${nm} <span class="calm">· ${S.inv[k]} · R$${S.prices[k].toFixed(2)}</span></span><span class="ctl">
-    <button class="btn" data-sell="${k}" data-n="1" ${S.inv[k]<1?"disabled":""}>${tr("market.sell1")}</button>
-    <button class="btn" data-sell="${k}" data-n="10" ${S.inv[k]<1?"disabled":""}>${tr("market.sell10")}</button></span></div>`}).join("");
-  const buyH=SHOP.map(it=>{const done=it.once&&it.once(),nk="shop."+it.k+".note";return `<div class="row"><span>${tr("shop."+it.k)}${hasKey(nk)?` <span class="calm">· ${tr(nk)}</span>`:""}</span><span class="ctl">
-    <button class="btn" data-buy="${it.k}" ${done||S.money<it.cost()?"disabled":""}>${done?tr("market.done"):"R$"+it.cost()}</button></span></div>`}).join("");
-  return `${themeBtn()}<div class="landhead"><h2>${tr("market.title")}</h2><span class="chip">R$ <b>${S.money.toFixed(2)}</b></span></div>
-  <p>${tr("market.note",{n:S.families*2})}</p>
+  const k=K();
+  const sell=["feijao","milho","mandioca","ovos"].map(c=>{const nm=c==="ovos"?tr("store.eggs"):CROPS[c].name;
+    return `<div class="row"><span>${nm} <span class="calm">· ${k.inv[c]} · R$${S.prices[c].toFixed(2)}</span></span><span class="ctl">
+    <button class="btn" data-sell="${c}" data-n="1" ${k.inv[c]<1?"disabled":""}>${tr("market.sell1")}</button>
+    <button class="btn" data-sell="${c}" data-n="10" ${k.inv[c]<1?"disabled":""}>${tr("market.sell10")}</button></span></div>`}).join("");
+  const buyH=SHOP.map(it=>{const done=it.once&&it.once(k),nk="shop."+it.k+".note";return `<div class="row"><span>${tr("shop."+it.k)}${hasKey(nk)?` <span class="calm">· ${tr(nk)}</span>`:""}</span><span class="ctl">
+    <button class="btn" data-buy="${it.k}" ${done||k.money<it.cost()?"disabled":""}>${done?tr("market.done"):"R$"+it.cost()}</button></span></div>`}).join("");
+  return `${themeBtn()}<div class="landhead"><h2>${tr("market.title")}</h2><span class="chip">${short(k.name)} · R$ <b>${k.money.toFixed(2)}</b></span></div>
+  <p>${tr("market.note",{n:k.families*2})}</p>
   <div class="tabs"><button class="btn ${marketTab==="sell"?"on":""}" data-tab="sell">${tr("market.sell")}</button><button class="btn ${marketTab==="buy"?"on":""}" data-tab="buy">${tr("market.buy")}</button></div>
   <div>${marketTab==="sell"?sell:buyH}</div>
   <div class="bar"><button class="btn go" data-close="1">${tr("market.back")}</button></div>`})}
 
-const pickHint=()=>`<span class="calm">${tr("choose.hint")}</span>`;
-function openChoose(){show(()=>`${themeBtn()}<h2>${tr("choose.title")}</h2>
-  <p>${tr("choose.text")}</p>
-  ${mapHtml()}
-  ${moveSel!=null?estateCard(S.estates[moveSel]):pickHint()}
-  <div class="bar"><button class="btn go" data-settle="1" ${moveSel==null?"disabled":""}>${tr("choose.go")}</button></div>`)}
-function settle(){
-  S.land=S.estates.splice(moveSel,1)[0];moveSel=null;S.landsCount=1;S.phase="play";S.labor=laborMax();
-  log("log.settle",{name:S.land.name,region:S.land.region});hide();save();
-}
-const cap=()=>S.families*15+S.carts*60;
-const have=k=>k==="hens"?S.hens:k==="chicks"?S.chicks.length:k==="tools"?S.tools:S.inv[k];
-const W={feijao:1,milho:1,mandioca:1,ovos:1,hens:1,chicks:1,tools:2};   // weight of one unit when packing
-const TAKEK=[["hens",()=>tr("store.hens")],["chicks",()=>tr("take.chicks")],["milho",()=>CROPS.milho.name],["feijao",()=>CROPS.feijao.name],["mandioca",()=>CROPS.mandioca.name],["ovos",()=>tr("store.eggs")],["tools",()=>tr("store.hoes")]];
-const weight=t=>Object.keys(W).reduce((s,k)=>s+t[k]*W[k],0);
-function defaultTake(){const t={};let room=cap();for(const [k] of TAKEK){const n=Math.max(0,Math.min(have(k),Math.floor(room/W[k])));t[k]=n;room-=n*W[k]}return t}
-function openMove(forced){show(()=>{
-  if(!take)take=defaultTake();
-  const w=weight(take),c=cap(),over=w>c;
-  const dest=moveSel!=null?S.estates[moveSel]:null, cost=dest?moveCost(dest):0, broke=!forced&&dest&&S.money<cost;
-  const left=S.land.plots.filter(p=>p.s==="grow"||p.s==="ready").length;
-  const goLabel=over?tr("move.tooHeavy"):broke?tr("move.need",{n:cost}):dest?tr("move.goCost",{n:forced?Math.min(S.money,cost):cost}):tr("move.go");
-  return `${themeBtn()}<h2>${forced?tr("move.titleForced"):tr("move.title")}</h2>
-  <p>${forced?tr("move.forced",{name:S.land.name}):tr("move.voluntary")} ${tr(S.land.well?"move.stayWell":"move.stay")}${left?" "+tr("move.lost",{n:left}):""} ${tr(forced?"move.goatsUnion":"move.goats")}</p>
-  <span class="label">${tr("move.choose")}</span>
-  ${mapHtml()}
-  ${moveSel!=null?estateCard(S.estates[moveSel]):pickHint()}
-  <span class="label">${tr("move.pack")}</span>
-  <div class="meter cap ${over?"over":""}" style="grid-template-columns:90px 1fr 70px"><span>${tr("move.load")}</span><div class="track"><i style="width:${Math.min(100,w/c*100)}%"></i></div><b>${w}/${c}</b></div>
-  <div>${TAKEK.filter(([k])=>have(k)>0).map(([k,nm])=>{const step=W[k]===1&&have(k)>10?5:1;return `<div class="row"><span>${nm()} <span class="calm">· ${tr("move.have",{n:have(k)})}</span></span><span class="ctl">
-    <button class="btn" data-tk="${k}" data-dl="-${step}">−${step}</button><span class="n">${take[k]}</span><button class="btn" data-tk="${k}" data-dl="${step}">+${step}</button></span></div>`}).join("")}</div>
-  <span class="calm">${tr(S.carts?"move.capacityCart":"move.capacity")}</span>
-  <div class="bar">${forced?"":`<button class="btn" data-close="1">${tr("move.stayBtn")}</button>`}<button class="btn go" data-go="1" ${moveSel==null||over||broke?"disabled":""}>${goLabel}</button></div>`})}
-function doMove(){
-  const dest=S.estates[moveSel], forced=S.phase==="evict", cost=moveCost(dest), paid=forced?Math.min(S.money,cost):cost, km=kmTo(dest);
-  if(!forced&&S.money<cost)return;
-  S.money-=paid;
-  S.estates.splice(moveSel,1);
-  if(!forced)S.estates.push({...S.land,plots:S.land.plots.map(()=>({s:"mato"}))}); // left voluntarily: the land reverts to scrub, still idle
-  S.inv={feijao:take.feijao,milho:take.milho,mandioca:take.mandioca,ovos:take.ovos};
-  S.hens=take.hens;S.chicks=S.chicks.slice(0,take.chicks);S.tools=take.tools;
-  const from=S.land.name;
-  S.history.push({name:from,region:S.land.region,lon:S.land.lon,lat:S.land.lat,evicted:forced});
-  S.land=dest;S.discovered=false;S.cas=null;S.sel=null;S.landsCount++;S.phase="play";
-  log("log.moved",{from,km,name:dest.name,region:dest.region,paid});
-  endMonth(true);
-  moveSel=null;take=null;
-  if(S.phase==="play"){hide();save()}
-}
-function openEnd(){setTimeout(()=>show(()=>{
-  const won=S.phase==="won";
-  return `${themeBtn()}<h2>${won?tr("end.wonTitle",{name:S.land.name}):tr("end.lostTitle")}</h2>
-  <p>${won?tr("end.won",{fam:S.families,t:S.t,occ:tr("end.occ",{n:S.landsCount})}):tr("end.lost",{t:S.t})}</p>
-  <div class="inv"><div><b>${S.t}</b>${tr("end.months")}</div><div><b>${S.landsCount}</b>${tr("end.estates")}</div><div><b>${S.evictions}</b>${tr("end.evictions")}</div><div><b>${S.families}</b>${tr("end.families")}</div><div><b>${S.hens}</b>${tr("end.hens")}</div><div><b>${S.goats}</b>${tr("end.goats")}</div></div>
-  <div class="bar"><button class="btn go" data-restart="1">${tr("end.restart")}</button></div>`}),0)}
+/* The last screen: every camp is now a settlement or lost. */
+const END_TEXT={all:["end.titleAll","end.bodyAll"],some:["end.titleSome","end.bodySome"],none:["end.titleNone","end.bodyNone"]};
+const endModal=()=>{
+  const won=S.camps.filter(c=>c.state==="won"), n=S.camps.length, fam=won.reduce((s,c)=>s+c.families,0);
+  const [tk,bk]=END_TEXT[won.length===n?"all":won.length?"some":"none"], v={w:won.length,total:n,fam,t:S.t};
+  return `${themeBtn()}<h2>${tr(tk,v)}</h2>
+  <p>${tr(bk,v)}</p>
+  <div class="inv"><div><b>${S.t}</b>${tr("end.months")}</div><div><b>${won.length}</b>${tr("end.won")}</div><div><b>${n-won.length}</b>${tr("end.lost")}</div><div><b>${fam}</b>${tr("end.families")}</div></div>
+  <div class="bar"><button class="btn go" data-restart="1">${tr("end.restart")}</button></div>`};
 
 /* ===== 11. BOOT ===== */
+/* Saves from before there were several camps: one land in S.land plus loose families/money/stores. The old camp
+   becomes camp 0 and three new camps start next to it. */
+function upgradeOld(){
+  const L=S.land;
+  if(!L){newGame();return}
+  const camp=Object.assign(L,{state:S.phase==="won"?"won":S.phase==="lost"||S.phase==="evict"?"lost":"camp",why:S.phase==="lost"?"hunger":"evicted",endT:S.t,
+    families:S.families,labor:S.labor,money:S.money,inv:S.inv,hens:S.hens,chicks:S.chicks||[],goats:S.goats||0,tools:S.tools||0,
+    discovered:!!S.discovered,cas:S.cas||null,acted:S.acted||{},sel:S.sel??null});
+  if(camp.state!=="camp")camp.cas=null;
+  S={t:S.t,phase:"play",cur:0,camps:[camp,...genCamps(CAMPS-1,[L.region],[L.name])],log:S.log||[],prices:S.prices||newPrices()};
+}
 function start(data){
   S=data&&data.S;
   if(!S){try{S=JSON.parse(localStorage.getItem("lonapreta"))}catch(e){S=null}}
-  if(!S||!S.inv){newGame()}
-  S.history=S.history||[];            // saves from before the map existed
-  S.estates=S.estates||genEstates();  // saves from before selectable estates existed
+  if(!S||!(S.camps||S.inv))newGame();
+  else if(!S.camps)upgradeOld();
+  if(S.cur==null||!S.camps[S.cur])S.cur=0;
+  if(!S.camps.some(live))S.phase="over";
   render();
-  if(S.phase==="choose")openChoose();
-  else if(S.phase==="evict")openMove(true);
-  else if(S.phase==="won"||S.phase==="lost")openEnd();
+  if(S.phase==="over")show(endModal);
 }
 window.claude?.hot?.snapshot?.(()=>({S}));
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
