@@ -23,7 +23,7 @@ scripts/drivers/    small click-through scripts used by shot.mjs
 |---|---|---|
 | 1 | THEME | `THEMES`, `applyTheme`, `toggleTheme`, `themeBtn`. Picks the mode and the language |
 | 2 | I18N | The `I18N` dictionary (`en`, `pt`) between `/* i18n:begin */` and `/* i18n:end */`, plus `tr()` |
-| 3 | DATA | Constants: `CROPS`, `NAMES`, `REGIONS`, `REGION_XY`, `BR` (Brazil outline), `geo()`, random helpers |
+| 3 | DATA | Constants: `CROPS`, `NAMES`, `REGIONS`, `REGION_SITES`, `REGION_XY`, `BR` (Brazil outline), `geo()`, random helpers |
 | 4 | STATE | `S`, `newGame`, `genEstates`, `genLand`, `log`, `save`, label helpers (`ownerKind`...) |
 | 5 | PLOT ART | `art(plot)` returns inline SVG for one plot |
 | 6 | RENDER | `render()` rebuilds the whole main screen into `#app` |
@@ -92,9 +92,9 @@ Not saved (module variables): `moveSel` (selected estate index on the map), `tak
 
 ## The map
 
-- `BR` is a hand-made outline of Brazil as `[lon,lat]` pairs. `geo(lon,lat)` projects to a 400x395 SVG
-  viewBox (equirectangular). `REGION_XY` gives each region a centre. Positions are illustrative, not survey data.
-- `genEstates()` makes 2 estates per region on opposite sides of the centre so markers do not overlap.
+- `BR` is the border of Brazil as `[lon,lat]` pairs (Natural Earth 1:50m, public domain, simplified to ~7 km). `geo(lon,lat)` projects to a 400x395 SVG
+  viewBox (equirectangular). `REGION_SITES` pins two real municipalities per region (`REGION_XY` is their midpoint).
+- `genEstates()` makes 2 estates per region, one near each of the region's two sites (about 10 km of random jitter).
 - Selecting a marker sets `moveSel`. The cost shown comes from `moveCost(estate)`.
 - Leaving land voluntarily puts it back in `estates` as idle scrub. Being evicted does not (it gets a ✕).
 

@@ -52,8 +52,9 @@ A crop touches many places. Use `feijao` as the model and search for it:
 
 ## Add a region
 
-1. `REGIONS`: add the name. 2. `REGION_XY`: its `[lon,lat]` (south and west are negative; it must fall inside
-the Brazil outline). 3. `NAMES` must contain at least `2 * REGIONS.length` names (add names if not).
+1. `REGIONS`: add the name. 2. `REGION_SITES`: two real places `[lon,lat]` (south and west are negative), at least
+1.2 degrees apart so the markers do not overlap and a little inland (estates get ~0.1 degree of jitter; the border and
+coast must stay outside it). `REGION_XY`, the region centre, is derived. 3. `NAMES` must contain at least `2 * REGIONS.length` names (add names if not).
 `genEstates()` then makes 2 estates there. Old saves keep their old estates.
 
 ## Change the cost of moving

@@ -95,7 +95,7 @@ Moving means choosing a new estate on the map and packing the trucks. Trucks and
 
 ### The map
 
-A stylized map of Brazil shows 16 idle estates, two in each region (Pontal do Paranapanema, Sul do Pará, Campanha Gaúcha and so on). Positions are approximate and illustrative, not survey data.
+A map of Brazil (real border data) shows 16 idle estates, two in each region (Pontal do Paranapanema, Sul do Pará, Campanha Gaúcha and so on). Each estate sits near a real municipality of its region, such as Rosana or Bagé, though the estates themselves are fictional.
 
 - Each idle estate is a red, selectable marker. At the start, pick one to occupy. Later, tap one on the map to see its size, soil, owner, years unused, distance and **what it costs to move there**.
 - Your camp is the larger marker. It is red where the land is idle and fills green as plots go into production, so the effect of your farming is visible.
