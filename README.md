@@ -1,10 +1,10 @@
 # Lona Preta
 
-**Occupy idle land. Make it produce. Defend it in court. If the judge orders you off, pack what you can carry.**
+**Run several occupations at once. Make each one produce. Defend each in court. Turn every camp into a settlement, or lose it for good.**
 
 Lona Preta is a small turn-based browser game inspired by the land occupations of Brazil's *Movimento dos Trabalhadores Rurais Sem Terra* (MST). The name means "black tarp", the plastic sheeting that covers the shacks in MST camps along Brazilian roadsides.
 
-You lead a camp of landless families. You start with three families, five hens and sacks of seed. You occupy an estate that has sat unused for years, clear the scrub, plant crops and raise chickens. Sooner or later the owner finds out and sues to get the land back. You fund the defense and keep the land producing. Then you wait for the judge.
+You lead a movement of landless families. You start with **four camps in four different regions**, each with two families, three hens and sacks of seed, each on an estate that has sat unused for years. You switch between the camps, clear scrub, plant crops and raise chickens in each. Sooner or later each owner finds out and sues to get the land back. You fund every defense and keep every camp producing. Then you wait for the judges. Each camp ends on its own: it becomes a **settlement**, or it is **lost for good**. The aim is to turn all of them into settlements.
 
 It is a single HTML file with no build step and no dependencies.
 
@@ -31,9 +31,13 @@ To host it with GitHub Pages, go to **Settings → Pages**, choose **Deploy from
 
 Each turn is one month, starting in October at the beginning of the rainy season.
 
-### 1. Choose an estate
+### 1. Four camps, one movement
 
-You pick from three randomly generated *fazendas*. Each one shows:
+The game starts with four camps, picked at random in four different regions and spaced out on the map. Switch between them with the tabs under the title or by tapping a marker on the map. Each tab shows the camp's state (quiet, hearing in N months, settlement, lost) so a hearing in another camp is never out of sight.
+
+**Nothing is shared between camps.** Each one has its own families, labor, money, stores, animals, wells and court case. Seed, eggs and cash do not move from one to another. "Next month" moves every camp forward at once, and the game ends when no camp is still fighting.
+
+Each estate has:
 
 | Attribute | Why it matters |
 |---|---|
@@ -42,7 +46,6 @@ You pick from three randomly generated *fazendas*. Each one shows:
 | Owner | Heirs in a dispute are weak in court. Agribusiness groups hire strong lawyers |
 | Watchfulness | How quickly the owner notices you farming |
 | Size | 9, 12 or 16 plots |
-| Distance | How far the trucks travel when you move there |
 
 ### 2. Farm
 
@@ -58,20 +61,19 @@ Crops planted in the rainy season (Oct–Mar) give a full harvest. Dry-season pl
 
 ### 3. Keep everyone fed
 
-Each family eats 2 food a month: eggs, goat milk or any crop. If there isn't enough, a family leaves. If every family leaves, the camp ends.
+Each family eats 2 food a month: eggs, goat milk or any crop. If there isn't enough, a family leaves. If every family leaves a camp, that camp is lost for good.
 
 Hens lay 3 eggs a month when fed corn (1 corn per 3 hens) and 1 when they forage. They also hatch chicks that grow into hens. A camp with plenty of food attracts new families, up to eight.
 
 ### 4. Trade at the feira
 
-Sell harvests and eggs at prices that shift every month. Buy:
+Sell harvests and eggs at prices that shift every month (the same prices for every camp). Whatever you buy or sell goes to the camp on screen. Buy:
 
 - **Seed** for any crop
 - **Laying hens**
-- **Dairy goats**, which give food every month and walk with you when you move
+- **Dairy goats**, which give food every month
 - **Hoes**, for +1 labor every month
-- **Ox carts**, for +60 carrying capacity
-- **A well**, which gives full dry-season yields but stays behind if you leave
+- **A well**, which gives full dry-season yields on that land
 
 ### 5. Defend the land
 
@@ -85,26 +87,24 @@ Two bars track the case: **your defense** and **the owner's case**. The owner's 
 | Request an INCRA inspection | R$60, once per case | +2 per year the land sat unused |
 | Public mobilization | 3 labor, once a month | +5 |
 
-At the hearing, if your defense is at least as strong as the owner's case, the court orders the estate expropriated for agrarian reform and the land becomes your settlement. **You win.**
+At the hearing, if your defense is at least as strong as the owner's case, the court orders the estate expropriated for agrarian reform and that camp becomes a **settlement**. It is secured for good and stops needing you.
 
-### 6. Or move on
+### 6. Lost for good
 
-If you lose, you are evicted. You can also leave voluntarily at any time, which drops any case on the current land.
+If the defense falls short at the hearing, the families are driven off the land. The camp is **lost for good**: it is marked with a ✕ on the map and cannot be reclaimed. A camp is also lost if hunger drives off its last family. The other camps carry on.
 
-Moving means choosing a new estate on the map and packing the trucks. Trucks and fuel cost R$10 plus R$0.03 per km, on a road distance about 1.3 times the straight line. You need the full amount to leave voluntarily. After an eviction you pay what you have and the union covers the rest. Each family carries 15 units and each ox cart carries 60. Grain, eggs, hens and chicks weigh 1 each, and hoes weigh 2. Goats walk alongside and money weighs nothing. Crops still in the ground, wells and anything over the limit stay behind. The journey takes a month, and the families eat on the road.
+When every camp is a settlement or lost, the game ends. The final screen tells you how many of the four became settlements.
 
 ### The map
 
-A map of Brazil (real border data) shows 16 idle estates, two in each region (Pontal do Paranapanema, Sul do Pará, Campanha Gaúcha and so on). Each estate sits near a real municipality of its region, such as Rosana or Bagé, though the estates themselves are fictional.
+A map of Brazil (real border data) shows all your camps. Each camp sits near a real municipality of its region, such as Rosana or Bagé, though the estates themselves are fictional.
 
-- Each idle estate is a red, selectable marker. At the start, pick one to occupy. Later, tap one on the map to see its size, soil, owner, years unused, distance and **what it costs to move there**.
-- Your camp is the larger marker. It is red where the land is idle and fills green as plots go into production, so the effect of your farming is visible.
-- Estates you can't afford to reach right now are faded. Selecting one draws the route from your camp and shows its name and cost on the map.
-- Land you leave on your own goes back to the map as idle scrub. Land you are evicted from stays marked with a ✕ and does not come back.
+- Each camp is a marker with its name. It is red where the land is idle and fills green as plots go into production, so the effect of your farming is visible. A gold ring means the camp is a settlement, and a ✕ means it is lost.
+- The camp on screen has a highlighted ring. Tap any marker to go to that camp.
 
 ### Random events
 
-About one month in three brings an event: a fox in the henhouse, good rain or a dry spell, a donation from the rural workers' union, an agrarian reform fair that raises prices, press coverage that helps your case, a seed exchange with a nearby settlement, a new family joining, or a university extension team improving your soil.
+About one month in three brings an event in each camp: a fox in the henhouse, good rain or a dry spell, a donation from the rural workers' union, (once in a while, for everyone) an agrarian reform fair that raises prices, press coverage that helps your case, a seed exchange with a nearby settlement, a new family joining, or a university extension team improving your soil.
 
 ## Background
 
@@ -137,4 +137,5 @@ must pass before you commit.
 
 - Larger animals (cattle) and processed goods like *farinha de mandioca*
 - Appeals after a lost hearing
-- Settling a won estate and sending some families onward to a new camp
+- Solidarity between camps: sending families, seed or money from one to another, or from a won settlement to those still fighting
+- Founding new occupations from the map

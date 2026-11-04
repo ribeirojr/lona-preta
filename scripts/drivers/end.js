@@ -1,5 +1,5 @@
-/* Show the "settlement won" end screen. */
-const fire=el=>el&&!el.disabled&&el.dispatchEvent(new MouseEvent("click",{bubbles:true}));
-const q=s=>document.querySelector(s);
-fire(q('[data-land="0"]')); fire(q('[data-settle]'));
-S.phase="won"; render(); openEnd();
+/* Show the final screen: two camps became settlements, two were lost. */
+S.camps.forEach(c=>c.endT=18);
+S.camps[0].state=S.camps[1].state="won";
+S.camps[2].state=S.camps[3].state="lost"; S.camps[2].why="hunger"; S.camps[3].why="evicted";
+S.t=21; S.phase="over"; render(); show(endModal);

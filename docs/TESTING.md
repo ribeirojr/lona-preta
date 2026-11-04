@@ -26,9 +26,9 @@ node scripts/shot.mjs <night|bandeira> <out.png> [driver.js] [width] [height]
 Examples:
 
 ```
-node scripts/shot.mjs night      /tmp/n.png                                   # first screen: "Where do we pitch the tarps?"
+node scripts/shot.mjs night      /tmp/n.png                                   # first screen: four fresh camps
 node scripts/shot.mjs bandeira   /tmp/b.png scripts/drivers/play.js           # main screen after some clicks
-node scripts/shot.mjs bandeira   /tmp/m.png scripts/drivers/move.js 800 1500  # the "move the camp" modal, tall window
+node scripts/shot.mjs bandeira   /tmp/m.png scripts/drivers/lost.js 800 1500  # a settlement, two lost camps, tall window
 node scripts/shot.mjs night      /tmp/p.png scripts/drivers/play.js 390 1700  # phone width (shown in an iframe, see below)
 ```
 
@@ -42,26 +42,27 @@ Ready-made drivers in `scripts/drivers/`:
 
 | Driver | Result |
 |---|---|
-| `play.js` | occupies an estate, clears and plants some plots, selects the cheapest estate on the map |
-| `move.js` | same, then opens the "Move the camp" modal |
+| `play.js` | works two camps (clears, plants), forces a hearing in a third, shows camp 1 |
 | `market.js` | opens the feira on the Buy tab |
-| `court.js` | forces a court case and some log entries |
-| `end.js` | shows the "settlement won" screen |
+| `court.js` | forces a court case in camp 0 and some log entries |
+| `lost.js` | camp 0 is a settlement, camps 1 and 2 are lost (evicted, starved), camp 3 has a hearing coming. Shows a lost camp |
+| `end.js` | shows the final screen (2 settlements, 2 lost) |
+| `notice.js` | two camps get news in the same month: the notices queue up |
 
 ### Writing a driver
 
 A driver is a plain script appended to a **temporary copy** of `index.html` (your file is untouched). It runs in the page, so it can use the
-game's globals (`S`, `render`, `tr`, `moveCost`, `openMarket`, ...). Click helper:
+game's globals (`S`, `K()`, `render`, `tr`, `openMarket`, `endMonth`, ...). Click helper:
 
 ```js
 const fire=el=>el&&!el.disabled&&el.dispatchEvent(new MouseEvent("click",{bubbles:true})); // NOT el.click(): SVG has no click()
 const q=s=>document.querySelector(s);
-fire(q('[data-land="0"]')); fire(q('[data-settle]'));          // choose the first estate on the map, occupy it
-fire(q('[data-p="0"]')); fire(q('[data-a="clear"]'));          // select plot 0, clear it
+fire(q('[data-camp="1"]'));                                   // go to the second camp (tab or map marker)
+fire(q('[data-p="0"]')); fire(q('[data-a="clear"]'));          // select plot 0 of that camp, clear it
 ```
 
-Useful selectors: `[data-land="i"]` estate marker, `[data-settle]` occupy, `[data-p="i"]` plot, `[data-a="clear|plant|harvest|market|move|next|lawyer|laudo|mob"]`,
-`[data-theme-toggle]` mode button, `[data-go]` pack up and go, `[data-tab="buy"]`. To set up a situation quickly, change `S` directly and call `render()`
+Useful selectors: `[data-camp="i"]` camp tab or map marker, `[data-p="i"]` plot, `[data-a="clear|plant|harvest|market|next|lawyer|laudo|mob"]`,
+`[data-theme-toggle]` mode button, `[data-tab="buy"]`, `#okb` the OK button of a notice, `[data-restart]`. To set up a situation quickly, change `S` directly and call `render()`
 (see `court.js`).
 
 ### Reading values instead of pixels
@@ -69,7 +70,7 @@ Useful selectors: `[data-land="i"]` estate marker, `[data-settle]` occupy, `[dat
 Write results into the page title and dump the DOM:
 
 ```js
-document.title = "money="+S.money+" estates="+S.estates.length;
+document.title = "money="+K().money+" camps="+S.camps.length;
 ```
 ```
 chrome --headless=new --disable-gpu --user-data-dir=/tmp/prof --virtual-time-budget=3000 --dump-dom file:///path/to/copy.html | grep -o "<title>[^<]*</title>"
@@ -79,10 +80,11 @@ chrome --headless=new --disable-gpu --user-data-dir=/tmp/prof --virtual-time-bud
 
 Run through in **both** modes (use the button at the top right, or `?theme=`):
 
-- [ ] First screen: map visible, 16 markers, selecting one shows its card, "Occupy" enables.
+- [ ] First screen: four camp tabs, four markers on the map with readable names, the camp on screen has a ring.
 - [ ] Main screen: plots, status chips, map, stores, log, "How to play" all readable.
-- [ ] Select an estate on the map: card shows distance and cost, "Move camp here" shows `R$` cost; far ones are faded when you cannot afford them.
-- [ ] Open the feira (sell and buy tabs), open "Move camp", open an end screen.
+- [ ] Tap a tab and a map marker: the main screen switches camp. Money, stores and plots are per camp.
+- [ ] Open the feira (sell and buy tabs). Look at a won camp (banner, read-only plots), a lost camp (banner only) and the end screen.
+- [ ] "Next month" with news in two camps: the notices appear one after the other.
 - [ ] Switch mode **with a modal open**: it must re-translate in place.
 - [ ] Switch mode on the main screen: the log entries re-translate too.
 - [ ] No English in Modo Bandeira; no Portuguese UI sentences in Night (place and crop names excepted).
@@ -90,9 +92,9 @@ Run through in **both** modes (use the button at the top right, or `?theme=`):
 
 ## 4. Old saves
 
-Saves from earlier versions must still load. `start()` upgrades them (adds `history`, `estates`). Log entries in the old format
+Saves from earlier versions must still load. `start()` upgrades them (`upgradeOld()` turns a one-camp save into camp 0 and adds three new camps). Log entries in the old format
 (`{m,when}` strings) still display. If you change the shape of `S`, add an upgrade line in `start()` and test by loading an
-old shape (for example set `S.estates=undefined` before calling `start`).
+old shape (put it in `localStorage["lonapreta"]` and call `start({})`).
 
 ## 5. Deploy
 
